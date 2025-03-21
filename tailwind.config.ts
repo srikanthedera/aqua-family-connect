@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -18,6 +19,19 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				sans: [
+					'SF Pro Display', 
+					'system-ui', 
+					'-apple-system', 
+					'BlinkMacSystemFont', 
+					'Segoe UI', 
+					'Roboto', 
+					'Helvetica Neue', 
+					'Arial', 
+					'sans-serif'
+				],
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -61,6 +75,19 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				water: {
+					'50': '#f0f9ff',
+					'100': '#e0f2fe',
+					'200': '#bae6fd',
+					'300': '#7dd3fc',
+					'400': '#38bdf8',
+					'500': '#0ea5e9',
+					'600': '#0284c7',
+					'700': '#0369a1',
+					'800': '#075985',
+					'900': '#0c4a6e',
+					'950': '#082f49',
 				}
 			},
 			borderRadius: {
@@ -84,12 +111,70 @@ export default {
 					to: {
 						height: '0'
 					}
-				}
+				},
+				'ripple': {
+					'0%': {
+						transform: 'scale(0)',
+						opacity: '0.5',
+					},
+					'100%': {
+						transform: 'scale(3)',
+						opacity: '0',
+					},
+				},
+				'wave': {
+					'0%': { 
+						transform: 'translateY(0)' 
+					},
+					'50%': { 
+						transform: 'translateY(-10px)' 
+					},
+					'100%': { 
+						transform: 'translateY(0)' 
+					},
+				},
+				'fade-in': {
+					'0%': {
+						opacity: '0',
+					},
+					'100%': {
+						opacity: '1',
+					},
+				},
+				'slide-up': {
+					'0%': {
+						transform: 'translateY(20px)',
+						opacity: '0',
+					},
+					'100%': {
+						transform: 'translateY(0)',
+						opacity: '1',
+					},
+				},
+				'slide-in-right': {
+					'0%': {
+						transform: 'translateX(30px)',
+						opacity: '0',
+					},
+					'100%': {
+						transform: 'translateX(0)',
+						opacity: '1',
+					},
+				},
 			},
 			animation: {
-				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
-			}
+				'accordion-down': 'accordion-down 0.3s ease-out',
+				'accordion-up': 'accordion-up 0.3s ease-out',
+				'ripple': 'ripple 1s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+				'wave': 'wave 2s ease-in-out infinite',
+				'fade-in': 'fade-in 0.5s ease-out forwards',
+				'slide-up': 'slide-up 0.5s ease-out forwards',
+				'slide-in-right': 'slide-in-right 0.4s ease-out forwards',
+			},
+			backdropFilter: {
+				'none': 'none',
+				'blur': 'blur(8px)',
+			},
 		}
 	},
 	plugins: [require("tailwindcss-animate")],
