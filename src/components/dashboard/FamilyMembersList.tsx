@@ -3,78 +3,24 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { DropletIcon } from "lucide-react";
-
-interface FamilyMember {
-  id: number;
-  nickname: string;
-  age: number;
-  phValue: number;
-  avatar?: string;
-  consumption?: {
-    today: number;
-    week: number;
-    month: number;
-  };
-}
-
-// Sample data - in a real app, this would come from your API
-const familyMembers: FamilyMember[] = [
-  { 
-    id: 1, 
-    nickname: "Mom", 
-    age: 42, 
-    phValue: 8.2,
-    consumption: {
-      today: 1.8,
-      week: 12.2,
-      month: 48.5
-    }
-  },
-  { 
-    id: 2, 
-    nickname: "Dad", 
-    age: 45, 
-    phValue: 7.8,
-    consumption: {
-      today: 2.2,
-      week: 14.5,
-      month: 52.3
-    }
-  },
-  { 
-    id: 3, 
-    nickname: "Emma", 
-    age: 12, 
-    phValue: 7.2,
-    consumption: {
-      today: 1.2,
-      week: 8.1,
-      month: 32.5
-    }
-  },
-  { 
-    id: 4, 
-    nickname: "Jake", 
-    age: 8, 
-    phValue: 7.0,
-    consumption: {
-      today: 0.9,
-      week: 6.5,
-      month: 24.3
-    }
-  }
-];
+import { DropletIcon, UserX } from "lucide-react";
+import { useFamily, FamilyMember } from "@/contexts/FamilyContext";
+import { useNavigate } from "react-router-dom";
 
 interface FamilyMembersListProps {
   onSelectMember?: (member: FamilyMember) => void;
   showConsumption?: boolean;
+  showActions?: boolean;
 }
 
 const FamilyMembersList: React.FC<FamilyMembersListProps> = ({
   onSelectMember,
-  showConsumption = true
+  showConsumption = true,
+  showActions = false
 }) => {
+  const { familyMembers } = useFamily();
+  const navigate = useNavigate();
+
   const handleTap = (member: FamilyMember) => {
     if (onSelectMember) {
       onSelectMember(member);
@@ -94,13 +40,24 @@ const FamilyMembersList: React.FC<FamilyMembersListProps> = ({
     return "text-teal-500";
   };
 
+  // Navigate to family profile if no members
+  if (familyMembers.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-muted-foreground mb-4">No family members added yet</p>
+        <Button onClick={() => navigate("/family-profile")}>
+          Add Family Members
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       {familyMembers.map((member) => (
         <Card 
           key={member.id} 
           className="overflow-hidden border-none shadow-md hover:shadow-lg transition-shadow duration-300 animate-slide-up"
-          style={{ animationDelay: `${member.id * 100}ms` }}
         >
           <CardContent className="p-0">
             <Button

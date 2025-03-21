@@ -1,36 +1,73 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
-
-// Sample data - in a real app, this would come from your API
-const dailyData = [
-  { name: "12 AM", Mom: 0.1, Dad: 0.0, Emma: 0.0, Jake: 0.0 },
-  { name: "6 AM", Mom: 0.3, Dad: 0.4, Emma: 0.2, Jake: 0.1 },
-  { name: "12 PM", Mom: 0.6, Dad: 0.8, Emma: 0.4, Jake: 0.3 },
-  { name: "6 PM", Mom: 0.5, Dad: 0.6, Emma: 0.4, Jake: 0.3 },
-  { name: "11 PM", Mom: 0.3, Dad: 0.4, Emma: 0.2, Jake: 0.2 },
-];
-
-const weeklyData = [
-  { name: "Mon", Mom: 1.8, Dad: 2.1, Emma: 1.3, Jake: 0.9 },
-  { name: "Tue", Mom: 1.7, Dad: 2.0, Emma: 1.2, Jake: 0.8 },
-  { name: "Wed", Mom: 1.9, Dad: 2.2, Emma: 1.1, Jake: 1.0 },
-  { name: "Thu", Mom: 1.8, Dad: 2.3, Emma: 1.2, Jake: 0.9 },
-  { name: "Fri", Mom: 1.6, Dad: 2.0, Emma: 1.0, Jake: 0.8 },
-  { name: "Sat", Mom: 1.9, Dad: 2.4, Emma: 1.5, Jake: 1.1 },
-  { name: "Sun", Mom: 1.5, Dad: 1.5, Emma: 0.8, Jake: 1.0 },
-];
-
-const monthlyData = [
-  { name: "Week 1", Mom: 12.2, Dad: 14.5, Emma: 8.1, Jake: 6.5 },
-  { name: "Week 2", Mom: 11.8, Dad: 13.9, Emma: 7.8, Jake: 6.2 },
-  { name: "Week 3", Mom: 12.5, Dad: 14.3, Emma: 8.3, Jake: 6.0 },
-  { name: "Week 4", Mom: 12.0, Dad: 13.6, Emma: 8.3, Jake: 5.6 },
-];
+import { useFamily } from "@/contexts/FamilyContext";
 
 const ConsumptionChart = () => {
+  const { familyMembers } = useFamily();
+  const [dailyData, setDailyData] = useState<any[]>([]);
+  const [weeklyData, setWeeklyData] = useState<any[]>([]);
+  const [monthlyData, setMonthlyData] = useState<any[]>([]);
+
+  // Generate placeholder data based on actual family members
+  useEffect(() => {
+    if (familyMembers.length === 0) return;
+
+    // Generate daily data
+    const daily = [
+      { name: "12 AM" },
+      { name: "6 AM" },
+      { name: "12 PM" },
+      { name: "6 PM" },
+      { name: "11 PM" },
+    ];
+
+    // Generate weekly data
+    const weekly = [
+      { name: "Mon" },
+      { name: "Tue" },
+      { name: "Wed" },
+      { name: "Thu" },
+      { name: "Fri" },
+      { name: "Sat" },
+      { name: "Sun" },
+    ];
+
+    // Generate monthly data
+    const monthly = [
+      { name: "Week 1" },
+      { name: "Week 2" },
+      { name: "Week 3" },
+      { name: "Week 4" },
+    ];
+
+    // Populate with family member data
+    familyMembers.forEach((member) => {
+      // Create placeholder data for visualization
+      daily.forEach((item) => {
+        if (item.name === "12 AM") item[member.nickname] = 0.1;
+        else if (item.name === "6 AM") item[member.nickname] = 0.2 + Math.random() * 0.2;
+        else if (item.name === "12 PM") item[member.nickname] = 0.4 + Math.random() * 0.4;
+        else if (item.name === "6 PM") item[member.nickname] = 0.3 + Math.random() * 0.3;
+        else if (item.name === "11 PM") item[member.nickname] = 0.2 + Math.random() * 0.2;
+      });
+
+      weekly.forEach((item) => {
+        item[member.nickname] = 0.8 + Math.random() * 1.5;
+      });
+
+      monthly.forEach((item) => {
+        item[member.nickname] = 5 + Math.random() * 8;
+      });
+    });
+
+    setDailyData(daily);
+    setWeeklyData(weekly);
+    setMonthlyData(monthly);
+  }, [familyMembers]);
+
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
@@ -53,6 +90,28 @@ const ConsumptionChart = () => {
     return null;
   };
 
+  // Function that will be called by PCB to update consumption data
+  const updateConsumptionData = (memberId: string, amount: number) => {
+    console.log(`Updating consumption for member ${memberId} with amount ${amount}L`);
+    // Logic to update consumption data
+  };
+
+  // If no family members, show a placeholder
+  if (familyMembers.length === 0 || dailyData.length === 0) {
+    return (
+      <Card className="shadow-lg border-none animate-fade-in">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg font-medium">Water Consumption</CardTitle>
+        </CardHeader>
+        <CardContent className="h-80 flex items-center justify-center">
+          <p className="text-muted-foreground">
+            Add family members to view consumption data
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="shadow-lg border-none animate-fade-in">
       <CardHeader className="pb-3">
@@ -73,10 +132,19 @@ const ConsumptionChart = () => {
                 <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis tickFormatter={(value) => `${value}L`} fontSize={12} tickLine={false} axisLine={false} />
                 <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="Mom" fill="#38bdf8" radius={[4, 4, 0, 0]} barSize={20} />
-                <Bar dataKey="Dad" fill="#0ea5e9" radius={[4, 4, 0, 0]} barSize={20} />
-                <Bar dataKey="Emma" fill="#7dd3fc" radius={[4, 4, 0, 0]} barSize={20} />
-                <Bar dataKey="Jake" fill="#bae6fd" radius={[4, 4, 0, 0]} barSize={20} />
+                {familyMembers.map((member, index) => {
+                  // Generate colors based on index
+                  const colors = ["#38bdf8", "#0ea5e9", "#7dd3fc", "#bae6fd", "#0284c7", "#0369a1"];
+                  return (
+                    <Bar 
+                      key={member.id}
+                      dataKey={member.nickname} 
+                      fill={colors[index % colors.length]} 
+                      radius={[4, 4, 0, 0]} 
+                      barSize={20} 
+                    />
+                  );
+                })}
               </BarChart>
             </ResponsiveContainer>
           </TabsContent>
@@ -88,10 +156,19 @@ const ConsumptionChart = () => {
                 <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis tickFormatter={(value) => `${value}L`} fontSize={12} tickLine={false} axisLine={false} />
                 <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="Mom" fill="#38bdf8" radius={[4, 4, 0, 0]} barSize={20} />
-                <Bar dataKey="Dad" fill="#0ea5e9" radius={[4, 4, 0, 0]} barSize={20} />
-                <Bar dataKey="Emma" fill="#7dd3fc" radius={[4, 4, 0, 0]} barSize={20} />
-                <Bar dataKey="Jake" fill="#bae6fd" radius={[4, 4, 0, 0]} barSize={20} />
+                {familyMembers.map((member, index) => {
+                  // Generate colors based on index
+                  const colors = ["#38bdf8", "#0ea5e9", "#7dd3fc", "#bae6fd", "#0284c7", "#0369a1"];
+                  return (
+                    <Bar 
+                      key={member.id}
+                      dataKey={member.nickname} 
+                      fill={colors[index % colors.length]} 
+                      radius={[4, 4, 0, 0]} 
+                      barSize={20} 
+                    />
+                  );
+                })}
               </BarChart>
             </ResponsiveContainer>
           </TabsContent>
@@ -103,10 +180,19 @@ const ConsumptionChart = () => {
                 <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis tickFormatter={(value) => `${value}L`} fontSize={12} tickLine={false} axisLine={false} />
                 <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="Mom" fill="#38bdf8" radius={[4, 4, 0, 0]} barSize={20} />
-                <Bar dataKey="Dad" fill="#0ea5e9" radius={[4, 4, 0, 0]} barSize={20} />
-                <Bar dataKey="Emma" fill="#7dd3fc" radius={[4, 4, 0, 0]} barSize={20} />
-                <Bar dataKey="Jake" fill="#bae6fd" radius={[4, 4, 0, 0]} barSize={20} />
+                {familyMembers.map((member, index) => {
+                  // Generate colors based on index
+                  const colors = ["#38bdf8", "#0ea5e9", "#7dd3fc", "#bae6fd", "#0284c7", "#0369a1"];
+                  return (
+                    <Bar 
+                      key={member.id}
+                      dataKey={member.nickname} 
+                      fill={colors[index % colors.length]} 
+                      radius={[4, 4, 0, 0]} 
+                      barSize={20} 
+                    />
+                  );
+                })}
               </BarChart>
             </ResponsiveContainer>
           </TabsContent>

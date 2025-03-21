@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -7,15 +7,37 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { Bluetooth, Wifi, RefreshCw, CheckCircle, Smartphone } from "lucide-react";
+import PCBService from "@/services/PCBService";
+import { useFamily } from "@/contexts/FamilyContext";
 
 const ConnectDevice = () => {
   const navigate = useNavigate();
+  const { familyMembers } = useFamily();
   const [connectionMethod, setConnectionMethod] = useState<"bluetooth" | "wifi" | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [scanProgress, setScanProgress] = useState(0);
   const [devices, setDevices] = useState<{id: string, name: string, signal: number}[]>([]);
   const [connectedDevice, setConnectedDevice] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<string>(PCBService.getConnectionStatus());
+
+  // Listen for connection status changes
+  useEffect(() => {
+    const handleConnectionStatusChange = (status: string) => {
+      setConnectionStatus(status);
+      if (status === 'connected') {
+        setConnectedDevice(devices.find(d => d.id === connectedDevice)?.id || null);
+      } else {
+        setConnectedDevice(null);
+      }
+    };
+
+    PCBService.addConnectionListener(handleConnectionStatusChange);
+    
+    return () => {
+      PCBService.removeConnectionListener(handleConnectionStatusChange);
+    };
+  }, [devices, connectedDevice]);
 
   const handleStartScan = async () => {
     if (!connectionMethod) {
@@ -58,15 +80,23 @@ const ConnectDevice = () => {
   const handleConnect = async (deviceId: string) => {
     setIsConnecting(true);
     
-    // Simulate connection process
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    let connected = false;
+    if (connectionMethod === "bluetooth") {
+      connected = await PCBService.connectBluetooth(deviceId);
+    } else {
+      connected = await PCBService.connectWifi(deviceId);
+    }
     
-    setConnectedDevice(deviceId);
+    if (connected) {
+      setConnectedDevice(deviceId);
+      
+      // If we have family members, sync them with the PCB
+      if (familyMembers.length > 0) {
+        await PCBService.sendFamilyProfiles(familyMembers);
+      }
+    }
+    
     setIsConnecting(false);
-    
-    toast.success(`Successfully connected to your water filter device!`, {
-      description: "You can now manage your device in the app."
-    });
   };
 
   return (

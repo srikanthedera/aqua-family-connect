@@ -8,8 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropletIcon } from "lucide-react";
+import { useFamily, FamilyMember } from "@/contexts/FamilyContext";
 
-// Sample data - in a real app, this would come from your API
+// This will be populated by PCB data in the future
 const trendData = [
   { date: "Jan 1", waterQuality: 95, averagePh: 7.4 },
   { date: "Jan 8", waterQuality: 96, averagePh: 7.5 },
@@ -33,14 +34,14 @@ const recommendations = [
   },
   {
     id: 2,
-    title: "Adjust pH for Emma",
-    description: "Emma's current pH setting (7.2) could be slightly increased based on her recent health report.",
-    impact: "A more alkaline pH of 7.5 may help with her vitamin absorption based on trends in her health data."
+    title: "Adjust pH for family members",
+    description: "Some family members could benefit from slightly adjusted pH settings based on recent trends.",
+    impact: "A more balanced pH may help with vitamin absorption based on trends in health data."
   },
   {
     id: 3,
-    title: "Monitor Jake's hydration",
-    description: "Jake is consistently drinking less than the recommended amount for his age.",
+    title: "Monitor hydration consistency",
+    description: "Some family members are consistently drinking less than the recommended amount for their age.",
     impact: "Consider setting hydration reminders or creating a fun water drinking game to encourage consumption."
   }
 ];
@@ -69,6 +70,15 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 const Hydration = () => {
   const [timeRange, setTimeRange] = useState("3months");
+  const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
+  const { familyMembers } = useFamily();
+
+  // This function will be called when PCB sends data
+  const handlePCBDataReceived = (data: any) => {
+    // Process and update consumption data from PCB
+    console.log("PCB data received:", data);
+    // Logic to update user's consumption data will go here
+  };
 
   return (
     <DashboardLayout>
@@ -82,7 +92,10 @@ const Hydration = () => {
 
         <div>
           <h2 className="text-lg font-medium mb-4">Select Family Member</h2>
-          <FamilyMembersList />
+          <FamilyMembersList 
+            onSelectMember={setSelectedMember}
+            showConsumption={true}
+          />
         </div>
         
         <div>
