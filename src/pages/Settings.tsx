@@ -1,45 +1,32 @@
 
-import React, { useState } from "react";
+import React from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BellIcon, DeviceIcon, UserIcon, ShieldIcon, LogOutIcon } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { SettingsIcon, BellIcon, Smartphone, LogOutIcon, CloudIcon } from "lucide-react";
 
 const Settings = () => {
-  const [notifications, setNotifications] = useState({
-    waterConsumption: true,
-    healthReports: true,
-    filterMaintenance: true,
-  });
-  
-  const handleSaveProfile = () => {
-    toast.success("Profile settings saved successfully");
+  const handleSavePCB = () => {
+    toast.success("PCB settings updated successfully");
   };
-  
-  const handleSaveDevice = () => {
-    toast.success("Device settings saved successfully");
+
+  const handleResetPCB = () => {
+    toast.info("PCB settings reset to default values");
   };
-  
+
   const handleSaveNotifications = () => {
-    toast.success("Notification preferences saved successfully");
+    toast.success("Notification preferences updated");
   };
-  
-  const handleSavePrivacy = () => {
-    toast.success("Privacy settings saved successfully");
-  };
-  
+
   const handleLogout = () => {
-    toast.info("Logging out...");
-    // In a real app, this would handle the logout logic
-    setTimeout(() => {
-      window.location.href = "/login";
-    }, 1000);
+    toast.info("Logged out successfully");
+    // In a real app, you would handle logout logic here
   };
 
   return (
@@ -48,216 +35,190 @@ const Settings = () => {
         <div>
           <h1 className="text-2xl font-medium mb-2">Settings</h1>
           <p className="text-muted-foreground">
-            Manage your account, device, and app preferences
+            Manage your account and device preferences
           </p>
         </div>
         
-        <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="w-full justify-start mb-6">
-            <TabsTrigger value="profile" className="flex items-center">
-              <UserIcon className="h-4 w-4 mr-2" />
-              <span>Profile</span>
-            </TabsTrigger>
-            <TabsTrigger value="device" className="flex items-center">
-              <DeviceIcon className="h-4 w-4 mr-2" />
-              <span>Device</span>
-            </TabsTrigger>
-            <TabsTrigger value="notifications" className="flex items-center">
-              <BellIcon className="h-4 w-4 mr-2" />
-              <span>Notifications</span>
-            </TabsTrigger>
-            <TabsTrigger value="privacy" className="flex items-center">
-              <ShieldIcon className="h-4 w-4 mr-2" />
-              <span>Privacy</span>
-            </TabsTrigger>
-          </TabsList>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Device Settings */}
+          <Card className="shadow-md border-none overflow-hidden animate-fade-in">
+            <CardHeader className="pb-3">
+              <div className="flex items-center space-x-2">
+                <Smartphone className="h-5 w-5 text-primary" />
+                <CardTitle className="text-lg font-medium">Device Settings</CardTitle>
+              </div>
+              <CardDescription>
+                Configure your PCB water filter device
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">Device ID</Label>
+                <Input value="WF-92A47C3E" readOnly className="bg-muted/50" />
+              </div>
+              
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">Connection Type</Label>
+                <Select defaultValue="bluetooth">
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select connection type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="bluetooth">Bluetooth</SelectItem>
+                    <SelectItem value="wifi">WiFi</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">Sensor Sensitivity</Label>
+                <Slider defaultValue={[75]} max={100} step={1} />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>Low</span>
+                  <span>Medium</span>
+                  <span>High</span>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium">Auto-Calibration</Label>
+                <Switch defaultChecked />
+              </div>
+            </CardContent>
+            <CardFooter className="flex justify-between pt-2">
+              <Button variant="outline" onClick={handleResetPCB}>Reset to Default</Button>
+              <Button onClick={handleSavePCB}>Save Changes</Button>
+            </CardFooter>
+          </Card>
           
-          <TabsContent value="profile" className="animate-fade-in">
-            <Card className="shadow-md border-none">
-              <CardHeader>
-                <CardTitle>Profile Settings</CardTitle>
-                <CardDescription>
-                  Update your personal information
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
-                  <Input id="name" defaultValue="John Smith" />
+          {/* Notification Settings */}
+          <Card className="shadow-md border-none overflow-hidden animate-fade-in">
+            <CardHeader className="pb-3">
+              <div className="flex items-center space-x-2">
+                <BellIcon className="h-5 w-5 text-primary" />
+                <CardTitle className="text-lg font-medium">Notification Settings</CardTitle>
+              </div>
+              <CardDescription>
+                Manage your notification preferences
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-sm font-medium">Daily Hydration Reminders</Label>
+                  <p className="text-xs text-muted-foreground">Receive reminders to stay hydrated</p>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input id="email" defaultValue="john@example.com" />
+                <Switch defaultChecked />
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-sm font-medium">Water Quality Alerts</Label>
+                  <p className="text-xs text-muted-foreground">Get alerts about water quality issues</p>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number</Label>
-                  <Input id="phone" defaultValue="(555) 123-4567" />
+                <Switch defaultChecked />
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-sm font-medium">Filter Replacement Notifications</Label>
+                  <p className="text-xs text-muted-foreground">Be notified when filter needs replacing</p>
                 </div>
-              </CardContent>
-              <CardFooter className="flex justify-end">
-                <Button onClick={handleSaveProfile}>
-                  Save Changes
-                </Button>
-              </CardFooter>
-            </Card>
-          </TabsContent>
+                <Switch defaultChecked />
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-sm font-medium">Health Report Analysis</Label>
+                  <p className="text-xs text-muted-foreground">Notifications when reports are analyzed</p>
+                </div>
+                <Switch defaultChecked />
+              </div>
+            </CardContent>
+            <CardFooter className="pt-2">
+              <Button onClick={handleSaveNotifications} className="w-full">Save Preferences</Button>
+            </CardFooter>
+          </Card>
           
-          <TabsContent value="device" className="animate-fade-in">
-            <Card className="shadow-md border-none">
-              <CardHeader>
-                <CardTitle>Device Settings</CardTitle>
-                <CardDescription>
-                  Configure your Water Filter device
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="device-name">Device Name</Label>
-                  <Input id="device-name" defaultValue="Kitchen Filter" />
+          {/* Account Settings */}
+          <Card className="shadow-md border-none overflow-hidden animate-fade-in">
+            <CardHeader className="pb-3">
+              <div className="flex items-center space-x-2">
+                <SettingsIcon className="h-5 w-5 text-primary" />
+                <CardTitle className="text-lg font-medium">Account Settings</CardTitle>
+              </div>
+              <CardDescription>
+                Manage your account preferences
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">Email</Label>
+                <Input value="user@example.com" readOnly className="bg-muted/50" />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium">First Name</Label>
+                  <Input defaultValue="John" />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="connection-type">Connection Type</Label>
-                  <Select defaultValue="wifi">
-                    <SelectTrigger id="connection-type">
-                      <SelectValue placeholder="Select connection type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="wifi">Wi-Fi</SelectItem>
-                      <SelectItem value="bluetooth">Bluetooth</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium">Last Name</Label>
+                  <Input defaultValue="Doe" />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="filter-maintenance">Filter Replacement Reminder</Label>
-                  <Select defaultValue="1month">
-                    <SelectTrigger id="filter-maintenance">
-                      <SelectValue placeholder="Select reminder frequency" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="2weeks">2 Weeks Before</SelectItem>
-                      <SelectItem value="1month">1 Month Before</SelectItem>
-                      <SelectItem value="2months">2 Months Before</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardContent>
-              <CardFooter className="flex justify-end">
-                <Button onClick={handleSaveDevice}>
-                  Save Changes
-                </Button>
-              </CardFooter>
-            </Card>
-          </TabsContent>
+              </div>
+              
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">Password</Label>
+                <Input type="password" value="********" readOnly className="bg-muted/50" />
+              </div>
+              
+              <Button variant="outline" className="w-full">Change Password</Button>
+            </CardContent>
+          </Card>
           
-          <TabsContent value="notifications" className="animate-fade-in">
-            <Card className="shadow-md border-none">
-              <CardHeader>
-                <CardTitle>Notification Preferences</CardTitle>
-                <CardDescription>
-                  Control which notifications you receive
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="water-consumption">Water Consumption</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Receive notifications about family water consumption
-                    </p>
-                  </div>
-                  <Switch
-                    id="water-consumption"
-                    checked={notifications.waterConsumption}
-                    onCheckedChange={(checked) => setNotifications({ ...notifications, waterConsumption: checked })}
-                  />
+          {/* Storage Settings */}
+          <Card className="shadow-md border-none overflow-hidden animate-fade-in">
+            <CardHeader className="pb-3">
+              <div className="flex items-center space-x-2">
+                <CloudIcon className="h-5 w-5 text-primary" />
+                <CardTitle className="text-lg font-medium">Storage Settings</CardTitle>
+              </div>
+              <CardDescription>
+                Manage local storage for health reports
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-sm font-medium">Store Reports Locally Only</Label>
+                  <p className="text-xs text-muted-foreground">Health reports will not be uploaded to cloud</p>
                 </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="health-reports">Health Reports</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Get notified when new health report analysis is available
-                    </p>
-                  </div>
-                  <Switch
-                    id="health-reports"
-                    checked={notifications.healthReports}
-                    onCheckedChange={(checked) => setNotifications({ ...notifications, healthReports: checked })}
-                  />
+                <Switch defaultChecked />
+              </div>
+              
+              <div className="pt-2 pb-2 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Local Storage Used</span>
+                  <span className="font-medium">48.2 MB</span>
                 </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="filter-maintenance">Filter Maintenance</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Receive alerts about filter status and maintenance
-                    </p>
-                  </div>
-                  <Switch
-                    id="filter-maintenance"
-                    checked={notifications.filterMaintenance}
-                    onCheckedChange={(checked) => setNotifications({ ...notifications, filterMaintenance: checked })}
-                  />
+                <div className="w-full h-2 bg-muted rounded overflow-hidden">
+                  <div className="bg-primary h-full w-1/3" />
                 </div>
-              </CardContent>
-              <CardFooter className="flex justify-end">
-                <Button onClick={handleSaveNotifications}>
-                  Save Changes
-                </Button>
-              </CardFooter>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="privacy" className="animate-fade-in">
-            <Card className="shadow-md border-none">
-              <CardHeader>
-                <CardTitle>Privacy Settings</CardTitle>
-                <CardDescription>
-                  Manage your data and privacy preferences
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="analytics">Usage Analytics</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Allow anonymous usage data collection to improve the app
-                    </p>
-                  </div>
-                  <Switch id="analytics" defaultChecked />
+                <div className="text-xs text-muted-foreground">
+                  48.2 MB / 150 MB
                 </div>
-                
-                <div className="space-y-2">
-                  <Label>Health Report Storage</Label>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Your health reports are stored locally on your device and are never uploaded to our servers.
-                    Only the AI analysis results are saved to your account.
-                  </p>
-                  <Button variant="outline" className="w-full">
-                    Clear Local Health Reports
-                  </Button>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label>Account Data</Label>
-                  <Button variant="outline" className="w-full">
-                    Export My Data
-                  </Button>
-                </div>
-              </CardContent>
-              <CardFooter className="flex justify-end">
-                <Button onClick={handleSavePrivacy}>
-                  Save Changes
-                </Button>
-              </CardFooter>
-            </Card>
-          </TabsContent>
-        </Tabs>
+              </div>
+              
+              <Button variant="outline" className="w-full">Clear Cached Data</Button>
+            </CardContent>
+          </Card>
+        </div>
         
         <div className="pt-4">
           <Button 
-            variant="outline" 
-            className="w-full text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/20"
+            variant="destructive" 
+            className="w-full md:w-auto"
             onClick={handleLogout}
           >
             <LogOutIcon className="h-4 w-4 mr-2" />

@@ -16,6 +16,7 @@ import Hydration from "./pages/Hydration";
 import HealthReports from "./pages/HealthReports";
 import FamilyProfile from "./pages/FamilyProfile";
 import Settings from "./pages/Settings";
+import ConnectDevice from "./pages/ConnectDevice";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => (
           <Route path="/hydration" element={<Hydration />} />
           <Route path="/health-reports" element={<HealthReports />} />
           <Route path="/family-profile" element={<FamilyProfile />} />
+          <Route path="/connect-device" element={<ConnectDevice />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

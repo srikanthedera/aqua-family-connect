@@ -1,74 +1,77 @@
 
 import React from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import FamilyMembersList from "@/components/dashboard/FamilyMembersList";
 import ConsumptionChart from "@/components/dashboard/ConsumptionChart";
+import FamilyMembersList from "@/components/dashboard/FamilyMembersList";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DropletIcon, TrendingUpIcon, CalendarIcon, DropletMeasureIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { Droplets, Users, FileText, Smartphone } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+
   return (
     <DashboardLayout>
       <div className="space-y-8">
         <div>
-          <h1 className="text-2xl font-medium mb-2">Welcome back</h1>
+          <h1 className="text-2xl font-medium mb-2">Dashboard</h1>
           <p className="text-muted-foreground">
-            Monitor your family's hydration and wellness
+            Welcome to your Water Wellness dashboard
           </p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="shadow-md border-none animate-slide-up">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Consumption Today</CardTitle>
-              <DropletIcon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">5.7L</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                <TrendingUpIcon className="h-3 w-3 inline mr-1" />
-                <span className="text-green-500 font-medium">12%</span> from yesterday
-              </p>
+          <Card 
+            className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 shadow-md border-none animate-fade-in"
+            onClick={() => navigate("/hydration")}
+          >
+            <CardContent className="p-6 flex flex-col items-center justify-center cursor-pointer">
+              <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center mb-3">
+                <Droplets className="h-6 w-6 text-blue-500" />
+              </div>
+              <h3 className="font-medium text-lg text-center mb-1">Hydration</h3>
+              <p className="text-sm text-center text-muted-foreground">Track water consumption</p>
             </CardContent>
           </Card>
           
-          <Card className="shadow-md border-none animate-slide-up delay-100">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Weekly Average</CardTitle>
-              <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">38.4L</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                <TrendingUpIcon className="h-3 w-3 inline mr-1" />
-                <span className="text-green-500 font-medium">5%</span> from last week
-              </p>
+          <Card 
+            className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 shadow-md border-none animate-fade-in"
+            onClick={() => navigate("/family-profile")}
+          >
+            <CardContent className="p-6 flex flex-col items-center justify-center cursor-pointer">
+              <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center mb-3">
+                <Users className="h-6 w-6 text-green-500" />
+              </div>
+              <h3 className="font-medium text-lg text-center mb-1">Family</h3>
+              <p className="text-sm text-center text-muted-foreground">Manage profiles</p>
             </CardContent>
           </Card>
           
-          <Card className="shadow-md border-none animate-slide-up delay-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Most Active User</CardTitle>
-              <DropletIcon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">Dad</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                2.2L consumed today
-              </p>
+          <Card 
+            className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950 dark:to-amber-900 shadow-md border-none animate-fade-in"
+            onClick={() => navigate("/health-reports")}
+          >
+            <CardContent className="p-6 flex flex-col items-center justify-center cursor-pointer">
+              <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center mb-3">
+                <FileText className="h-6 w-6 text-amber-500" />
+              </div>
+              <h3 className="font-medium text-lg text-center mb-1">Health</h3>
+              <p className="text-sm text-center text-muted-foreground">Upload health reports</p>
             </CardContent>
           </Card>
           
-          <Card className="shadow-md border-none animate-slide-up delay-300">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Filter Status</CardTitle>
-              <DropletMeasureIcon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-500">Excellent</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                79% filter life remaining
-              </p>
+          <Card 
+            className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 shadow-md border-none animate-fade-in"
+            onClick={() => navigate("/connect-device")}
+          >
+            <CardContent className="p-6 flex flex-col items-center justify-center cursor-pointer">
+              <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center mb-3">
+                <Smartphone className="h-6 w-6 text-purple-500" />
+              </div>
+              <h3 className="font-medium text-lg text-center mb-1">Device</h3>
+              <p className="text-sm text-center text-muted-foreground">Manage your filter</p>
             </CardContent>
           </Card>
         </div>

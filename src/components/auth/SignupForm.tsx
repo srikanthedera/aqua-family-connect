@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -8,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "sonner";
-import { WaterDropIcon } from "lucide-react";
+import { Droplet } from "lucide-react";
 
 const formSchema = z.object({
   firstName: z.string().min(2, "First name must be at least 2 characters"),
@@ -62,7 +61,7 @@ const SignupForm = () => {
     <div className="w-full max-w-md mx-auto p-6 animate-fade-in">
       <div className="flex flex-col items-center mb-6">
         <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-          <WaterDropIcon className="h-8 w-8 text-primary" />
+          <Droplet className="h-8 w-8 text-primary" />
         </div>
         <h1 className="text-2xl font-medium text-center mb-1">Create your account</h1>
         <p className="text-muted-foreground text-center mb-6">

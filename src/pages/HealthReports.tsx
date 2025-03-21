@@ -4,6 +4,7 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import HealthReportUploader from "@/components/health/HealthReportUploader";
 import HealthReportSummary from "@/components/health/HealthReportSummary";
+import { HealthReportData } from "@/types/health";
 
 // Sample data - in a real app, this would come from your API
 const familyMembers = [
@@ -14,7 +15,7 @@ const familyMembers = [
 ];
 
 // Sample health report data
-const healthReports = {
+const healthReports: Record<number, HealthReportData> = {
   1: {
     lastUpdated: "May 15, 2023",
     positiveIndicators: [
@@ -165,9 +166,9 @@ const HealthReports = () => {
                 <HealthReportSummary 
                   memberId={member.id}
                   memberName={member.name}
-                  lastUpdated={healthReports[member.id as keyof typeof healthReports].lastUpdated}
-                  positiveIndicators={healthReports[member.id as keyof typeof healthReports].positiveIndicators}
-                  concerningIndicators={healthReports[member.id as keyof typeof healthReports].concerningIndicators}
+                  lastUpdated={healthReports[member.id].lastUpdated}
+                  positiveIndicators={healthReports[member.id].positiveIndicators}
+                  concerningIndicators={healthReports[member.id].concerningIndicators}
                 />
               </div>
             </TabsContent>
