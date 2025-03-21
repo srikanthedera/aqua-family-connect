@@ -9,8 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
-import { Slider } from "@/components/ui/slider";
-import { PlusIcon, MinusIcon, UsersIcon, SendIcon } from "lucide-react";
+import { UsersIcon, SendIcon, PlusIcon } from "lucide-react";
 import FamilyMemberCard from "./FamilyMemberCard";
 
 const memberSchema = z.object({
@@ -70,6 +69,10 @@ const FamilyProfileForm = () => {
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       console.log("Family profile data:", values);
+      
+      // Store the family profile data in localStorage for demo purposes
+      localStorage.setItem('familyProfile', JSON.stringify(values));
+      
       toast.success("Family profile created successfully!");
       
       // In a real app, you would send this data to your PCB board here
@@ -118,13 +121,14 @@ const FamilyProfileForm = () => {
                   <h3 className="text-lg font-medium">Family Members</h3>
                   <Button
                     type="button"
-                    variant="outline"
-                    size="sm"
-                    className="rounded-full h-8 w-8 p-0"
                     onClick={addMember}
                     disabled={members.length >= 6}
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-1"
                   >
                     <PlusIcon className="h-4 w-4" />
+                    Add Member
                   </Button>
                 </div>
 
