@@ -6,6 +6,7 @@ export interface FamilyMember {
   nickname: string;
   age: number;
   phValue: number;
+  avatar?: string; // Added avatar property as optional
   consumption?: {
     today: number;
     week: number;
