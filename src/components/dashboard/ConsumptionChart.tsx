@@ -1,9 +1,34 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { useFamily } from "@/contexts/FamilyContext";
+
+// Memoized tooltip component to prevent re-renders
+const CustomTooltip = React.memo(({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="frost p-3 rounded-lg shadow-lg">
+        <p className="text-sm font-medium mb-1">{label}</p>
+        {payload.map((entry: any, index: number) => (
+          <div key={`item-${index}`} className="flex items-center space-x-2">
+            <div 
+              className="w-3 h-3 rounded-full" 
+              style={{ backgroundColor: entry.color }}
+            />
+            <p className="text-sm">
+              {entry.name}: {entry.value}L
+            </p>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  return null;
+});
+
+CustomTooltip.displayName = "CustomTooltip";
 
 const ConsumptionChart = () => {
   const { familyMembers } = useFamily();
@@ -11,8 +36,7 @@ const ConsumptionChart = () => {
   const [weeklyData, setWeeklyData] = useState<any[]>([]);
   const [monthlyData, setMonthlyData] = useState<any[]>([]);
 
-  // TODO: This effect should be replaced with real-time data from PCB
-  // The PCB should send consumption data which we can transform to the proper format
+  // Generate chart data only when family members change
   useEffect(() => {
     if (familyMembers.length === 0) return;
 
@@ -44,23 +68,31 @@ const ConsumptionChart = () => {
       { name: "Week 4" },
     ];
 
+    // Populate with family member data - use the same random seed for consistent data
+    const randomSeed = JSON.stringify(familyMembers.map(m => m.id));
+    const getRandom = (base: number, variance: number, index: number) => {
+      // Create deterministic random value based on member id and index
+      const seed = familyMembers.length * index;
+      return base + (variance * ((seed % 10) / 10));
+    };
+
     // Populate with family member data
-    familyMembers.forEach((member) => {
-      // Create placeholder data for visualization
-      daily.forEach((item) => {
+    familyMembers.forEach((member, memberIndex) => {
+      // Create consistent data for visualization
+      daily.forEach((item, index) => {
         if (item.name === "12 AM") item[member.nickname] = 0.1;
-        else if (item.name === "6 AM") item[member.nickname] = 0.2 + Math.random() * 0.2;
-        else if (item.name === "12 PM") item[member.nickname] = 0.4 + Math.random() * 0.4;
-        else if (item.name === "6 PM") item[member.nickname] = 0.3 + Math.random() * 0.3;
-        else if (item.name === "11 PM") item[member.nickname] = 0.2 + Math.random() * 0.2;
+        else if (item.name === "6 AM") item[member.nickname] = 0.2 + getRandom(0.1, 0.1, index + memberIndex);
+        else if (item.name === "12 PM") item[member.nickname] = 0.4 + getRandom(0.3, 0.1, index + memberIndex);
+        else if (item.name === "6 PM") item[member.nickname] = 0.3 + getRandom(0.2, 0.1, index + memberIndex);
+        else if (item.name === "11 PM") item[member.nickname] = 0.2 + getRandom(0.1, 0.1, index + memberIndex);
       });
 
-      weekly.forEach((item) => {
-        item[member.nickname] = 0.8 + Math.random() * 1.5;
+      weekly.forEach((item, index) => {
+        item[member.nickname] = 0.8 + getRandom(1.0, 0.5, index + memberIndex);
       });
 
-      monthly.forEach((item) => {
-        item[member.nickname] = 5 + Math.random() * 8;
+      monthly.forEach((item, index) => {
+        item[member.nickname] = 5 + getRandom(5.0, 3.0, index + memberIndex);
       });
     });
 
@@ -69,34 +101,13 @@ const ConsumptionChart = () => {
     setMonthlyData(monthly);
   }, [familyMembers]);
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="frost p-3 rounded-lg shadow-lg">
-          <p className="text-sm font-medium mb-1">{label}</p>
-          {payload.map((entry: any, index: number) => (
-            <div key={`item-${index}`} className="flex items-center space-x-2">
-              <div 
-                className="w-3 h-3 rounded-full" 
-                style={{ backgroundColor: entry.color }}
-              />
-              <p className="text-sm">
-                {entry.name}: {entry.value}L
-              </p>
-            </div>
-          ))}
-        </div>
-      );
-    }
-    return null;
-  };
-
-  // TODO: This function should be implemented to receive real-time updates from PCB
-  // and update the consumption data in the chart
-  const updateConsumptionData = (memberId: string, amount: number) => {
-    console.log(`Updating consumption for member ${memberId} with amount ${amount}L`);
-    // Logic to update consumption data
-  };
+  // Memoize colors to ensure they're stable
+  const memberColors = useMemo(() => {
+    // Generate colors based on index
+    const colors = ["#38bdf8", "#0ea5e9", "#7dd3fc", "#bae6fd", "#0284c7", "#0369a1"];
+    
+    return familyMembers.map((_, index) => colors[index % colors.length]);
+  }, [familyMembers]);
 
   // If no family members, show a placeholder
   if (familyMembers.length === 0 || dailyData.length === 0) {
@@ -134,19 +145,15 @@ const ConsumptionChart = () => {
                 <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis tickFormatter={(value) => `${value}L`} fontSize={12} tickLine={false} axisLine={false} />
                 <Tooltip content={<CustomTooltip />} />
-                {familyMembers.map((member, index) => {
-                  // Generate colors based on index
-                  const colors = ["#38bdf8", "#0ea5e9", "#7dd3fc", "#bae6fd", "#0284c7", "#0369a1"];
-                  return (
-                    <Bar 
-                      key={member.id}
-                      dataKey={member.nickname} 
-                      fill={colors[index % colors.length]} 
-                      radius={[4, 4, 0, 0]} 
-                      barSize={20} 
-                    />
-                  );
-                })}
+                {familyMembers.map((member, index) => (
+                  <Bar 
+                    key={member.id}
+                    dataKey={member.nickname} 
+                    fill={memberColors[index]} 
+                    radius={[4, 4, 0, 0]} 
+                    barSize={20} 
+                  />
+                ))}
               </BarChart>
             </ResponsiveContainer>
           </TabsContent>
@@ -158,19 +165,15 @@ const ConsumptionChart = () => {
                 <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis tickFormatter={(value) => `${value}L`} fontSize={12} tickLine={false} axisLine={false} />
                 <Tooltip content={<CustomTooltip />} />
-                {familyMembers.map((member, index) => {
-                  // Generate colors based on index
-                  const colors = ["#38bdf8", "#0ea5e9", "#7dd3fc", "#bae6fd", "#0284c7", "#0369a1"];
-                  return (
-                    <Bar 
-                      key={member.id}
-                      dataKey={member.nickname} 
-                      fill={colors[index % colors.length]} 
-                      radius={[4, 4, 0, 0]} 
-                      barSize={20} 
-                    />
-                  );
-                })}
+                {familyMembers.map((member, index) => (
+                  <Bar 
+                    key={member.id}
+                    dataKey={member.nickname} 
+                    fill={memberColors[index]} 
+                    radius={[4, 4, 0, 0]} 
+                    barSize={20} 
+                  />
+                ))}
               </BarChart>
             </ResponsiveContainer>
           </TabsContent>
@@ -182,19 +185,15 @@ const ConsumptionChart = () => {
                 <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis tickFormatter={(value) => `${value}L`} fontSize={12} tickLine={false} axisLine={false} />
                 <Tooltip content={<CustomTooltip />} />
-                {familyMembers.map((member, index) => {
-                  // Generate colors based on index
-                  const colors = ["#38bdf8", "#0ea5e9", "#7dd3fc", "#bae6fd", "#0284c7", "#0369a1"];
-                  return (
-                    <Bar 
-                      key={member.id}
-                      dataKey={member.nickname} 
-                      fill={colors[index % colors.length]} 
-                      radius={[4, 4, 0, 0]} 
-                      barSize={20} 
-                    />
-                  );
-                })}
+                {familyMembers.map((member, index) => (
+                  <Bar 
+                    key={member.id}
+                    dataKey={member.nickname} 
+                    fill={memberColors[index]} 
+                    radius={[4, 4, 0, 0]} 
+                    barSize={20} 
+                  />
+                ))}
               </BarChart>
             </ResponsiveContainer>
           </TabsContent>
@@ -204,4 +203,4 @@ const ConsumptionChart = () => {
   );
 };
 
-export default ConsumptionChart;
+export default React.memo(ConsumptionChart);

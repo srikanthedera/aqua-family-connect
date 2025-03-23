@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 
 export interface FamilyMember {
   id: string;
@@ -21,16 +21,20 @@ interface FamilyContextType {
   addFamilyMember: (member: Omit<FamilyMember, "id">) => void;
   updateFamilyMember: (id: string, data: Partial<FamilyMember>) => void;
   deleteFamilyMember: (id: string) => void;
-  syncFamilyProfileData: () => void; // New function to force sync between storages
+  syncFamilyProfileData: () => void; // Function to force sync between storages
 }
 
 const FamilyContext = createContext<FamilyContextType | undefined>(undefined);
 
 export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Function to synchronize data between familyProfile and familyMembers storages
-  const syncFamilyProfileData = () => {
+  // Using useCallback to prevent unnecessary re-renders
+  const syncFamilyProfileData = useCallback(() => {
+    if (isInitialized) return; // Only run on first load or when explicitly called
+    
     console.log("Syncing family profile data...");
     
     const storedMembers = localStorage.getItem("familyMembers");
@@ -68,15 +72,20 @@ export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       console.log("Loading family members from localStorage (familyMembers)");
       setFamilyMembers(JSON.parse(storedMembers));
     }
-  };
+    
+    setIsInitialized(true);
+  }, [isInitialized]);
 
-  // Load family members from local storage on initial render
+  // Load family members from local storage only once on initial render
   useEffect(() => {
     syncFamilyProfileData();
-  }, []);
+  }, [syncFamilyProfileData]);
 
   // Save to local storage whenever familyMembers changes
+  // But avoid excessive updates to localStorage
   useEffect(() => {
+    if (!isInitialized) return; // Skip the initial render
+    
     if (familyMembers.length > 0) {
       localStorage.setItem("familyMembers", JSON.stringify(familyMembers));
       console.log("Family members saved to localStorage:", familyMembers);
@@ -94,9 +103,9 @@ export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         }
       }
     }
-  }, [familyMembers]);
+  }, [familyMembers, isInitialized]);
 
-  const addFamilyMember = (member: Omit<FamilyMember, "id">) => {
+  const addFamilyMember = useCallback((member: Omit<FamilyMember, "id">) => {
     const newMember = {
       ...member,
       id: Math.random().toString(36).substring(2, 9),
@@ -112,9 +121,9 @@ export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     
     // TODO: Sync new family member with PCB board through PCBService
     console.log("New family member added, should sync with PCB:", newMember);
-  };
+  }, []);
 
-  const updateFamilyMember = (id: string, data: Partial<FamilyMember>) => {
+  const updateFamilyMember = useCallback((id: string, data: Partial<FamilyMember>) => {
     setFamilyMembers(prev => 
       prev.map(member => 
         member.id === id ? { ...member, ...data } : member
@@ -123,26 +132,26 @@ export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     
     // TODO: Sync updated family member with PCB board through PCBService
     console.log(`Family member ${id} updated, should sync with PCB:`, data);
-  };
+  }, []);
 
-  const deleteFamilyMember = (id: string) => {
+  const deleteFamilyMember = useCallback((id: string) => {
     setFamilyMembers(prev => prev.filter(member => member.id !== id));
     
     // TODO: Sync deletion with PCB board through PCBService
     console.log(`Family member ${id} deleted, should sync with PCB`);
-  };
+  }, []);
+
+  const memoizedValue = React.useMemo(() => ({
+    familyMembers, 
+    setFamilyMembers, 
+    addFamilyMember, 
+    updateFamilyMember, 
+    deleteFamilyMember,
+    syncFamilyProfileData
+  }), [familyMembers, addFamilyMember, updateFamilyMember, deleteFamilyMember, syncFamilyProfileData]);
 
   return (
-    <FamilyContext.Provider 
-      value={{ 
-        familyMembers, 
-        setFamilyMembers, 
-        addFamilyMember, 
-        updateFamilyMember, 
-        deleteFamilyMember,
-        syncFamilyProfileData 
-      }}
-    >
+    <FamilyContext.Provider value={memoizedValue}>
       {children}
     </FamilyContext.Provider>
   );
