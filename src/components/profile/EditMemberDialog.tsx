@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -9,14 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
 import { UserIcon } from "lucide-react";
-
-interface FamilyMember {
-  id: string;
-  nickname: string;
-  age: number;
-  phValue: number;
-  dateAdded: string;
-}
+import { FamilyMember } from "@/contexts/FamilyContext";
 
 interface EditMemberDialogProps {
   member: FamilyMember;
