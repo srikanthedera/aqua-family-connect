@@ -1,35 +1,47 @@
 
+/**
+ * PCBService - Handles communication with the water filter PCB board
+ * 
+ * This service provides methods to:
+ * - Connect to the PCB
+ * - Listen for water consumption data
+ * - Listen for water quality data
+ * - Send family profiles to the PCB
+ * - Trigger water dispensing
+ */
+
+import { FamilyMember } from "@/contexts/FamilyContext";
 import { toast } from "sonner";
 
-// Define the types of data we expect from the PCB
-export interface PCBWaterConsumptionData {
+// Event types for PCB data
+export type ConsumptionData = {
   memberId: string;
   amount: number;
   timestamp: number;
-  phLevel: number;
-}
+  ph: number;
+};
 
-export interface PCBWaterQualityData {
+export type QualityData = {
   waterQuality: number;
   averagePh: number;
   timestamp: number;
-}
+};
+
+// Listener types
+type ConsumptionListener = (data: ConsumptionData) => void;
+type QualityListener = (data: QualityData) => void;
+type ConnectionListener = (connected: boolean) => void;
 
 class PCBService {
   private static instance: PCBService;
-  private connectionStatus: 'disconnected' | 'connecting' | 'connected' = 'disconnected';
-  private listeners: {
-    consumption: ((data: PCBWaterConsumptionData) => void)[];
-    quality: ((data: PCBWaterQualityData) => void)[];
-    connection: ((status: string) => void)[];
-  };
+  private consumptionListeners: ConsumptionListener[] = [];
+  private qualityListeners: QualityListener[] = [];
+  private connectionListeners: ConnectionListener[] = [];
+  private connected: boolean = false;
+  private connectionInterval: NodeJS.Timeout | null = null;
 
   private constructor() {
-    this.listeners = {
-      consumption: [],
-      quality: [],
-      connection: []
-    };
+    // Private constructor to force singleton usage
   }
 
   public static getInstance(): PCBService {
@@ -39,182 +51,185 @@ class PCBService {
     return PCBService.instance;
   }
 
-  // Connect to PCB device via Bluetooth
-  public async connectBluetooth(deviceId: string): Promise<boolean> {
-    try {
-      this.connectionStatus = 'connecting';
-      this.notifyConnectionListeners('connecting');
-      
-      // In a real implementation, this would use Web Bluetooth API
-      // For now, we'll simulate successful connection after a delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      console.log(`Connected to PCB device via Bluetooth: ${deviceId}`);
-      this.connectionStatus = 'connected';
-      this.notifyConnectionListeners('connected');
-      
-      // Start listening for data from the PCB
-      this.startListening();
-      
-      return true;
-    } catch (error) {
-      console.error('Failed to connect to PCB device via Bluetooth:', error);
-      this.connectionStatus = 'disconnected';
-      this.notifyConnectionListeners('disconnected');
-      toast.error("Failed to connect to water filter device");
-      return false;
-    }
-  }
-
-  // Connect to PCB device via WiFi
-  public async connectWifi(deviceId: string): Promise<boolean> {
-    try {
-      this.connectionStatus = 'connecting';
-      this.notifyConnectionListeners('connecting');
-      
-      // In a real implementation, this would use Web Sockets or WebRTC
-      // For now, we'll simulate successful connection after a delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      console.log(`Connected to PCB device via WiFi: ${deviceId}`);
-      this.connectionStatus = 'connected';
-      this.notifyConnectionListeners('connected');
-      
-      // Start listening for data from the PCB
-      this.startListening();
-      
-      return true;
-    } catch (error) {
-      console.error('Failed to connect to PCB device via WiFi:', error);
-      this.connectionStatus = 'disconnected';
-      this.notifyConnectionListeners('disconnected');
-      toast.error("Failed to connect to water filter device");
-      return false;
-    }
-  }
-
-  // Disconnect from PCB device
-  public disconnect(): void {
-    // Implementation would depend on the connection method used
-    console.log('Disconnected from PCB device');
-    this.connectionStatus = 'disconnected';
-    this.notifyConnectionListeners('disconnected');
-    toast.info("Disconnected from water filter device");
-  }
-
-  // Send family member profiles to PCB
-  public async sendFamilyProfiles(familyMembers: any[]): Promise<boolean> {
-    if (this.connectionStatus !== 'connected') {
-      toast.error("Not connected to water filter device");
-      return false;
-    }
-
-    try {
-      // Format data for PCB
-      const pcbFamilyData = familyMembers.map(member => ({
-        id: member.id,
-        nickname: member.nickname,
-        phValue: member.phValue
-      }));
-
-      console.log('Sending family profiles to PCB:', pcbFamilyData);
-      
-      // In a real implementation, this would send data to the PCB
-      // For now, we'll simulate successful sending after a delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast.success("Family profiles synced with water filter");
-      return true;
-    } catch (error) {
-      console.error('Failed to send family profiles to PCB:', error);
-      toast.error("Failed to sync profiles with water filter");
-      return false;
-    }
-  }
-
-  // Add a consumption data listener
-  public addConsumptionListener(callback: (data: PCBWaterConsumptionData) => void): void {
-    this.listeners.consumption.push(callback);
-  }
-
-  // Remove a consumption data listener
-  public removeConsumptionListener(callback: (data: PCBWaterConsumptionData) => void): void {
-    this.listeners.consumption = this.listeners.consumption.filter(cb => cb !== callback);
-  }
-
-  // Add a water quality data listener
-  public addQualityListener(callback: (data: PCBWaterQualityData) => void): void {
-    this.listeners.quality.push(callback);
-  }
-
-  // Remove a water quality data listener
-  public removeQualityListener(callback: (data: PCBWaterQualityData) => void): void {
-    this.listeners.quality = this.listeners.quality.filter(cb => cb !== callback);
-  }
-
-  // Add a connection status listener
-  public addConnectionListener(callback: (status: string) => void): void {
-    this.listeners.connection.push(callback);
-  }
-
-  // Remove a connection status listener
-  public removeConnectionListener(callback: (status: string) => void): void {
-    this.listeners.connection = this.listeners.connection.filter(cb => cb !== callback);
-  }
-
-  // Notify all consumption data listeners
-  private notifyConsumptionListeners(data: PCBWaterConsumptionData): void {
-    this.listeners.consumption.forEach(callback => callback(data));
-  }
-
-  // Notify all water quality data listeners
-  private notifyQualityListeners(data: PCBWaterQualityData): void {
-    this.listeners.quality.forEach(callback => callback(data));
-  }
-
-  // Notify all connection status listeners
-  private notifyConnectionListeners(status: string): void {
-    this.listeners.connection.forEach(callback => callback(status));
-  }
-
-  // Start listening for data from the PCB
-  private startListening(): void {
-    // In a real implementation, this would set up event listeners for data from the PCB
-    // For now, we'll simulate receiving data at random intervals
-    
-    // Simulate water consumption data
-    setInterval(() => {
-      // Only send simulated data if connected
-      if (this.connectionStatus === 'connected') {
-        const simulatedData: PCBWaterConsumptionData = {
-          memberId: Math.random().toString(36).substring(2, 9), // Random ID
-          amount: 0.1 + Math.random() * 0.2, // Random amount between 0.1 and 0.3 liters
-          timestamp: Date.now(),
-          phLevel: 7.0 + Math.random() * 1.5 // Random pH between 7.0 and 8.5
-        };
+  /**
+   * TODO: Implement real PCB connection logic
+   * In a real app, this would use WebSockets, Bluetooth, or another 
+   * communication protocol to connect to the physical device
+   */
+  public connect(): Promise<boolean> {
+    return new Promise((resolve) => {
+      // Simulate connection process
+      setTimeout(() => {
+        this.connected = true;
+        this.notifyConnectionListeners(true);
+        toast.success("Connected to water filter");
         
-        this.notifyConsumptionListeners(simulatedData);
-      }
-    }, 30000); // Every 30 seconds
+        // Start simulating data for demo purposes
+        this.startDataSimulation();
+        
+        resolve(true);
+      }, 2000);
+    });
+  }
+
+  /**
+   * TODO: Implement real PCB disconnection logic
+   */
+  public disconnect(): Promise<boolean> {
+    return new Promise((resolve) => {
+      // Simulate disconnection process
+      setTimeout(() => {
+        this.connected = false;
+        this.notifyConnectionListeners(false);
+        
+        // Stop simulating data
+        if (this.connectionInterval) {
+          clearInterval(this.connectionInterval);
+          this.connectionInterval = null;
+        }
+        
+        toast.info("Disconnected from water filter");
+        resolve(true);
+      }, 1000);
+    });
+  }
+
+  /**
+   * TODO: Replace this with actual data from PCB
+   * This is just for demo purposes
+   */
+  private startDataSimulation() {
+    // Clear any existing interval
+    if (this.connectionInterval) {
+      clearInterval(this.connectionInterval);
+    }
     
-    // Simulate water quality data
-    setInterval(() => {
-      // Only send simulated data if connected
-      if (this.connectionStatus === 'connected') {
-        const simulatedData: PCBWaterQualityData = {
-          waterQuality: 90 + Math.random() * 10, // Random quality between 90 and 100
-          averagePh: 7.0 + Math.random() * 1.5, // Random pH between 7.0 and 8.5
+    // Simulate data every 10 seconds
+    this.connectionInterval = setInterval(() => {
+      if (!this.connected) return;
+      
+      // Simulate quality data once per minute
+      if (Math.random() > 0.8) {
+        const qualityData: QualityData = {
+          waterQuality: 90 + Math.random() * 8,
+          averagePh: 7.2 + Math.random() * 0.6,
           timestamp: Date.now()
         };
-        
-        this.notifyQualityListeners(simulatedData);
+        this.notifyQualityListeners(qualityData);
       }
-    }, 60000); // Every minute
+      
+      // Simulate consumption data randomly
+      if (Math.random() > 0.7) {
+        // Random family member ID (would come from PCB in real app)
+        const consumptionData: ConsumptionData = {
+          memberId: Math.random().toString(36).substring(2, 9),
+          amount: 0.1 + Math.random() * 0.3,
+          timestamp: Date.now(),
+          ph: 7.0 + Math.random() * 1.0
+        };
+        this.notifyConsumptionListeners(consumptionData);
+      }
+    }, 10000);
   }
 
-  // Get current connection status
-  public getConnectionStatus(): string {
-    return this.connectionStatus;
+  /**
+   * TODO: Implement real family profile synchronization with PCB
+   * Send family profiles to the PCB for user identification
+   */
+  public syncFamilyProfiles(members: FamilyMember[]): Promise<boolean> {
+    return new Promise((resolve) => {
+      if (!this.connected) {
+        toast.error("Not connected to water filter");
+        resolve(false);
+        return;
+      }
+      
+      // Simulate sending profiles to PCB
+      setTimeout(() => {
+        console.log("Sending family profiles to PCB:", members);
+        toast.success("Family profiles synced with water filter");
+        resolve(true);
+      }, 1500);
+    });
+  }
+
+  /**
+   * TODO: Implement real water dispensing command to PCB
+   * Trigger water dispensing for a specific family member
+   */
+  public dispenseWater(memberId: string, amount: number, ph: number): Promise<boolean> {
+    return new Promise((resolve) => {
+      if (!this.connected) {
+        toast.error("Not connected to water filter");
+        resolve(false);
+        return;
+      }
+      
+      // Simulate sending command to PCB
+      setTimeout(() => {
+        console.log(`Dispensing ${amount}L of water with pH ${ph} for member ${memberId}`);
+        
+        // Simulate data coming back from PCB after dispensing
+        const consumptionData: ConsumptionData = {
+          memberId,
+          amount,
+          timestamp: Date.now(),
+          ph
+        };
+        
+        this.notifyConsumptionListeners(consumptionData);
+        resolve(true);
+      }, 1000);
+    });
+  }
+
+  // Connection status listeners
+  public addConnectionListener(listener: ConnectionListener) {
+    this.connectionListeners.push(listener);
+    // Immediately notify with current status
+    listener(this.connected);
+    return () => this.removeConnectionListener(listener);
+  }
+  
+  public removeConnectionListener(listener: ConnectionListener) {
+    this.connectionListeners = this.connectionListeners.filter(l => l !== listener);
+  }
+  
+  private notifyConnectionListeners(connected: boolean) {
+    this.connectionListeners.forEach(listener => listener(connected));
+  }
+
+  // Consumption data listeners
+  public addConsumptionListener(listener: ConsumptionListener) {
+    this.consumptionListeners.push(listener);
+    return () => this.removeConsumptionListener(listener);
+  }
+  
+  public removeConsumptionListener(listener: ConsumptionListener) {
+    this.consumptionListeners = this.consumptionListeners.filter(l => l !== listener);
+  }
+  
+  private notifyConsumptionListeners(data: ConsumptionData) {
+    this.consumptionListeners.forEach(listener => listener(data));
+  }
+
+  // Water quality data listeners
+  public addQualityListener(listener: QualityListener) {
+    this.qualityListeners.push(listener);
+    return () => this.removeQualityListener(listener);
+  }
+  
+  public removeQualityListener(listener: QualityListener) {
+    this.qualityListeners = this.qualityListeners.filter(l => l !== listener);
+  }
+  
+  private notifyQualityListeners(data: QualityData) {
+    this.qualityListeners.forEach(listener => listener(data));
+  }
+
+  // Check if connected to PCB
+  public isConnected(): boolean {
+    return this.connected;
   }
 }
 

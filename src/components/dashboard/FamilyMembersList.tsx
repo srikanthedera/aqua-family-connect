@@ -21,6 +21,7 @@ const FamilyMembersList: React.FC<FamilyMembersListProps> = ({
   const { familyMembers } = useFamily();
   const navigate = useNavigate();
 
+  // TODO: This function needs to be updated to send data to the PCB when a family member's water is dispensed
   const handleTap = (member: FamilyMember) => {
     if (onSelectMember) {
       onSelectMember(member);

@@ -1,259 +1,291 @@
 
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
-import { Bluetooth, Wifi, RefreshCw, CheckCircle, Smartphone } from "lucide-react";
+import { WifiIcon, SmartphoneIcon, CheckIcon, XIcon, RefreshCwIcon, SendIcon, TrendingUpIcon } from "lucide-react";
 import PCBService from "@/services/PCBService";
 import { useFamily } from "@/contexts/FamilyContext";
 
 const ConnectDevice = () => {
-  const navigate = useNavigate();
-  const { familyMembers } = useFamily();
-  const [connectionMethod, setConnectionMethod] = useState<"bluetooth" | "wifi" | null>(null);
-  const [isScanning, setIsScanning] = useState(false);
-  const [scanProgress, setScanProgress] = useState(0);
-  const [devices, setDevices] = useState<{id: string, name: string, signal: number}[]>([]);
-  const [connectedDevice, setConnectedDevice] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState<string>(PCBService.getConnectionStatus());
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
+  const { familyMembers } = useFamily();
 
-  // Listen for connection status changes
   useEffect(() => {
-    const handleConnectionStatusChange = (status: string) => {
-      setConnectionStatus(status);
-      if (status === 'connected') {
-        setConnectedDevice(devices.find(d => d.id === connectedDevice)?.id || null);
-      } else {
-        setConnectedDevice(null);
-      }
-    };
-
-    PCBService.addConnectionListener(handleConnectionStatusChange);
+    // Check initial connection status
+    setIsConnected(PCBService.isConnected());
     
+    // Add connection status listener
+    const removeListener = PCBService.addConnectionListener((connected) => {
+      setIsConnected(connected);
+    });
+    
+    // Clean up listener on unmount
     return () => {
-      PCBService.removeConnectionListener(handleConnectionStatusChange);
+      removeListener();
     };
-  }, [devices, connectedDevice]);
+  }, []);
 
-  const handleStartScan = async () => {
-    if (!connectionMethod) {
-      toast.error("Please select a connection method first");
-      return;
+  const handleConnect = async () => {
+    setIsConnecting(true);
+    try {
+      await PCBService.connect();
+    } catch (error) {
+      console.error("Error connecting to device:", error);
+      toast.error("Failed to connect to water filter");
+    } finally {
+      setIsConnecting(false);
     }
-
-    setIsScanning(true);
-    setScanProgress(0);
-    setDevices([]);
-
-    // Simulate scan progress
-    const interval = setInterval(() => {
-      setScanProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setIsScanning(false);
-          
-          // Simulate finding devices
-          if (connectionMethod === "bluetooth") {
-            setDevices([
-              { id: "WF-92A47C3E", name: "AquaWater Filter", signal: 87 },
-              { id: "WF-A8B2C1D3", name: "Water Wellness PCB", signal: 92 }
-            ]);
-          } else {
-            setDevices([
-              { id: "WF-92A47C3E", name: "AquaWater Filter", signal: 75 },
-              { id: "WF-A8B2C1D3", name: "Water Wellness PCB", signal: 88 },
-              { id: "WF-E5F6G7H8", name: "Smart Water Device", signal: 62 }
-            ]);
-          }
-          
-          return 100;
-        }
-        return prev + 4;
-      });
-    }, 100);
   };
 
-  const handleConnect = async (deviceId: string) => {
-    setIsConnecting(true);
-    
-    let connected = false;
-    if (connectionMethod === "bluetooth") {
-      connected = await PCBService.connectBluetooth(deviceId);
-    } else {
-      connected = await PCBService.connectWifi(deviceId);
+  const handleDisconnect = async () => {
+    try {
+      await PCBService.disconnect();
+    } catch (error) {
+      console.error("Error disconnecting from device:", error);
+      toast.error("Failed to disconnect from water filter");
+    }
+  };
+
+  const handleSyncProfiles = async () => {
+    if (familyMembers.length === 0) {
+      toast.error("No family members to sync");
+      return;
     }
     
-    if (connected) {
-      setConnectedDevice(deviceId);
-      
-      // If we have family members, sync them with the PCB
-      if (familyMembers.length > 0) {
-        await PCBService.sendFamilyProfiles(familyMembers);
-      }
+    setIsSyncing(true);
+    try {
+      await PCBService.syncFamilyProfiles(familyMembers);
+    } catch (error) {
+      console.error("Error syncing profiles:", error);
+      toast.error("Failed to sync family profiles");
+    } finally {
+      setIsSyncing(false);
     }
-    
-    setIsConnecting(false);
+  };
+
+  // TODO: In a real app, this information would come from the PCB device
+  const deviceInfo = {
+    firmwareVersion: "v2.1.3",
+    serialNumber: "WF4872-X2",
+    lastMaintenance: "2023-08-15",
+    filterHealth: 87, // percentage
+    connectionsCount: 3,
+    uptime: "6 days, 4 hours"
   };
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-8">
         <div>
-          <h1 className="text-2xl font-medium mb-2">Connect Your Device</h1>
+          <h1 className="text-2xl font-medium mb-2">Connect Device</h1>
           <p className="text-muted-foreground">
-            Link your Water Wellness filter to the application
+            Connect and manage your smart water filter
           </p>
         </div>
         
-        <Card className="shadow-md border-none overflow-hidden animate-fade-in">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-medium">Choose Connection Method</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Button
-                variant={connectionMethod === "bluetooth" ? "default" : "outline"}
-                className="h-20 flex flex-col items-center justify-center space-y-2"
-                onClick={() => setConnectionMethod("bluetooth")}
-              >
-                <Bluetooth className="h-6 w-6" />
-                <span>Bluetooth</span>
-              </Button>
-              
-              <Button
-                variant={connectionMethod === "wifi" ? "default" : "outline"}
-                className="h-20 flex flex-col items-center justify-center space-y-2"
-                onClick={() => setConnectionMethod("wifi")}
-              >
-                <Wifi className="h-6 w-6" />
-                <span>WiFi</span>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-        
-        {connectionMethod && (
-          <Card className="shadow-md border-none overflow-hidden animate-fade-in">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg font-medium">
-                {isScanning ? "Scanning for Devices..." : "Available Devices"}
-              </CardTitle>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card className="border-none shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-lg font-medium">Device Connection</CardTitle>
+              <CardDescription>
+                Connect your app to the water filter
+              </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {isScanning ? (
-                <div className="space-y-4">
-                  <Progress value={scanProgress} className="h-2" />
-                  <p className="text-center text-sm text-muted-foreground">
-                    Searching for Water Wellness devices nearby...
-                  </p>
+            <CardContent className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className={`h-10 w-10 rounded-full ${isConnected ? 'bg-green-100' : 'bg-muted'} flex items-center justify-center`}>
+                    {isConnected ? (
+                      <CheckIcon className="h-5 w-5 text-green-600" />
+                    ) : (
+                      <WifiIcon className="h-5 w-5 text-muted-foreground" />
+                    )}
+                  </div>
+                  <div>
+                    <p className="font-medium">{isConnected ? 'Connected' : 'Not Connected'}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {isConnected ? 'Water filter is online and ready' : 'Connect to your water filter'}
+                    </p>
+                  </div>
                 </div>
-              ) : (
-                <>
-                  {devices.length > 0 ? (
-                    <div className="space-y-3">
-                      {devices.map((device) => (
-                        <Card 
-                          key={device.id} 
-                          className={`shadow-sm ${connectedDevice === device.id ? 'border-primary' : 'border-border'}`}
-                        >
-                          <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center space-x-3">
-                                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                  <Smartphone className="h-5 w-5 text-primary" />
-                                </div>
-                                <div>
-                                  <h3 className="text-sm font-medium">{device.name}</h3>
-                                  <p className="text-xs text-muted-foreground">ID: {device.id}</p>
-                                </div>
-                              </div>
-                              
-                              <div className="flex items-center space-x-3">
-                                <div className="flex items-center space-x-1">
-                                  <div className="h-2 w-2 rounded-full bg-primary" />
-                                  <div className={`h-2 w-2 rounded-full ${device.signal > 50 ? 'bg-primary' : 'bg-muted'}`} />
-                                  <div className={`h-2 w-2 rounded-full ${device.signal > 75 ? 'bg-primary' : 'bg-muted'}`} />
-                                </div>
-                                
-                                {connectedDevice === device.id ? (
-                                  <Button variant="ghost" size="sm" className="text-primary">
-                                    <CheckCircle className="h-4 w-4 mr-1" />
-                                    Connected
-                                  </Button>
-                                ) : (
-                                  <Button 
-                                    size="sm" 
-                                    onClick={() => handleConnect(device.id)}
-                                    disabled={isConnecting}
-                                  >
-                                    {isConnecting ? "Connecting..." : "Connect"}
-                                  </Button>
-                                )}
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-6">
-                      <p className="text-muted-foreground mb-4">No devices found</p>
-                      <Button onClick={handleStartScan} variant="outline">
-                        <RefreshCw className="h-4 w-4 mr-2" />
-                        Scan Again
-                      </Button>
-                    </div>
-                  )}
-                </>
-              )}
-              
-              {!isScanning && (
-                <div className="flex justify-center">
-                  <Button 
-                    onClick={handleStartScan} 
-                    disabled={isScanning}
-                    variant={devices.length > 0 ? "outline" : "default"}
-                  >
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    {devices.length > 0 ? "Scan Again" : "Start Scan"}
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
-        
-        {connectedDevice && (
-          <Card className="shadow-md border-none overflow-hidden animate-fade-in">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg font-medium">Device Connected</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="bg-primary/10 p-4 rounded-md flex items-center space-x-3">
-                <CheckCircle className="h-5 w-5 text-primary" />
                 <div>
-                  <p className="font-medium">Your water filter device is now connected!</p>
-                  <p className="text-sm text-muted-foreground">
-                    You can now view water consumption data and manage your family profiles.
-                  </p>
+                  {isConnected ? (
+                    <Button 
+                      variant="outline" 
+                      onClick={handleDisconnect}
+                      className="space-x-2"
+                    >
+                      <XIcon className="h-4 w-4" />
+                      <span>Disconnect</span>
+                    </Button>
+                  ) : (
+                    <Button 
+                      onClick={handleConnect}
+                      disabled={isConnecting}
+                      className="space-x-2"
+                    >
+                      {isConnecting ? (
+                        <>
+                          <RefreshCwIcon className="h-4 w-4 animate-spin" />
+                          <span>Connecting...</span>
+                        </>
+                      ) : (
+                        <>
+                          <WifiIcon className="h-4 w-4" />
+                          <span>Connect</span>
+                        </>
+                      )}
+                    </Button>
+                  )}
                 </div>
               </div>
               
-              <div className="flex justify-center space-x-3">
-                <Button variant="outline" onClick={() => navigate("/dashboard")}>
-                  Go to Dashboard
+              {isConnected && (
+                <div className="rounded-md bg-muted/50 p-4">
+                  <h3 className="text-sm font-medium mb-3">Device Information</h3>
+                  <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-sm">
+                    <div className="text-muted-foreground">Firmware Version</div>
+                    <div className="font-medium">{deviceInfo.firmwareVersion}</div>
+                    
+                    <div className="text-muted-foreground">Serial Number</div>
+                    <div className="font-medium">{deviceInfo.serialNumber}</div>
+                    
+                    <div className="text-muted-foreground">Last Maintenance</div>
+                    <div className="font-medium">{deviceInfo.lastMaintenance}</div>
+                    
+                    <div className="text-muted-foreground">Filter Health</div>
+                    <div className="font-medium">{deviceInfo.filterHealth}%</div>
+                    
+                    <div className="text-muted-foreground">Connections</div>
+                    <div className="font-medium">{deviceInfo.connectionsCount}</div>
+                    
+                    <div className="text-muted-foreground">Uptime</div>
+                    <div className="font-medium">{deviceInfo.uptime}</div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+            {isConnected && (
+              <CardFooter>
+                <Button 
+                  variant="outline" 
+                  className="w-full space-x-2"
+                  onClick={handleSyncProfiles}
+                  disabled={isSyncing || familyMembers.length === 0}
+                >
+                  {isSyncing ? (
+                    <>
+                      <RefreshCwIcon className="h-4 w-4 animate-spin" />
+                      <span>Syncing Family Profiles...</span>
+                    </>
+                  ) : (
+                    <>
+                      <SendIcon className="h-4 w-4" />
+                      <span>Sync Family Profiles</span>
+                    </>
+                  )}
                 </Button>
-                <Button onClick={() => navigate("/settings")}>
-                  Device Settings
-                </Button>
+              </CardFooter>
+            )}
+          </Card>
+          
+          <Card className="border-none shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-lg font-medium">Connection Guide</CardTitle>
+              <CardDescription>
+                How to connect your water filter
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <div className="flex items-start space-x-3">
+                  <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center mt-0.5">
+                    <span className="text-xs font-medium text-primary">1</span>
+                  </div>
+                  <div>
+                    <p className="font-medium">Power on your water filter</p>
+                    <p className="text-sm text-muted-foreground">
+                      Ensure your smart water filter is plugged in and powered on
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start space-x-3">
+                  <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center mt-0.5">
+                    <span className="text-xs font-medium text-primary">2</span>
+                  </div>
+                  <div>
+                    <p className="font-medium">Put device in pairing mode</p>
+                    <p className="text-sm text-muted-foreground">
+                      Press and hold the Bluetooth button on your filter for 5 seconds until it blinks blue
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start space-x-3">
+                  <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center mt-0.5">
+                    <span className="text-xs font-medium text-primary">3</span>
+                  </div>
+                  <div>
+                    <p className="font-medium">Connect in this app</p>
+                    <p className="text-sm text-muted-foreground">
+                      Click the Connect button above and wait for the connection to establish
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start space-x-3">
+                  <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center mt-0.5">
+                    <span className="text-xs font-medium text-primary">4</span>
+                  </div>
+                  <div>
+                    <p className="font-medium">Sync your family profiles</p>
+                    <p className="text-sm text-muted-foreground">
+                      After connecting, sync your family profiles to personalize water for each member
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="border-t pt-6">
+                <h3 className="text-sm font-medium mb-3">Need Help?</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  If you're having trouble connecting your device, try these steps:
+                </p>
+                <ul className="space-y-2 text-sm text-muted-foreground list-disc pl-5">
+                  <li>Ensure Bluetooth is enabled on your phone</li>
+                  <li>Restart your water filter device</li>
+                  <li>Make sure you're within 30 feet of the device</li>
+                  <li>Check if firmware updates are available</li>
+                </ul>
               </div>
             </CardContent>
+            {isConnected && (
+              <CardFooter>
+                <Button 
+                  variant="outline" 
+                  className="w-full space-x-2"
+                  onClick={() => {
+                    // TODO: In a real app, this would fetch and show real diagnostics data
+                    toast.info("Running diagnostics...");
+                    setTimeout(() => {
+                      toast.success("Diagnostics complete", {
+                        description: "All systems are working normally"
+                      });
+                    }, 2000);
+                  }}
+                >
+                  <TrendingUpIcon className="h-4 w-4 mr-2" />
+                  Run Diagnostics
+                </Button>
+              </CardFooter>
+            )}
           </Card>
-        )}
+        </div>
       </div>
     </DashboardLayout>
   );

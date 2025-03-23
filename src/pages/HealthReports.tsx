@@ -5,18 +5,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import HealthReportUploader from "@/components/health/HealthReportUploader";
 import HealthReportSummary from "@/components/health/HealthReportSummary";
 import { HealthReportData } from "@/types/health";
+import { useFamily } from "@/contexts/FamilyContext";
 
-// Sample data - in a real app, this would come from your API
-const familyMembers = [
-  { id: 1, name: "Mom" },
-  { id: 2, name: "Dad" },
-  { id: 3, name: "Emma" },
-  { id: 4, name: "Jake" },
-];
-
-// Sample health report data
-const healthReports: Record<number, HealthReportData> = {
-  1: {
+// Sample health report data - in a real app, this would come from your backend
+// TODO: This should be replaced with actual health report data from the database
+const healthReports: Record<string, HealthReportData> = {
+  "1": {
     lastUpdated: "May 15, 2023",
     positiveIndicators: [
       {
@@ -47,7 +41,7 @@ const healthReports: Record<number, HealthReportData> = {
       }
     ]
   },
-  2: {
+  "2": {
     lastUpdated: "June 2, 2023",
     positiveIndicators: [
       {
@@ -77,56 +71,35 @@ const healthReports: Record<number, HealthReportData> = {
         changeAmount: "0 mg/dL"
       }
     ]
-  },
-  3: {
-    lastUpdated: "April 10, 2023",
-    positiveIndicators: [
-      {
-        name: "Hemoglobin",
-        value: "14.2 g/dL",
-        referenceRange: "12-15.5 g/dL",
-        status: "normal",
-        change: "unchanged",
-        changeAmount: "0 g/dL"
-      },
-      {
-        name: "Iron",
-        value: "95 mcg/dL",
-        referenceRange: "60-170 mcg/dL",
-        status: "normal",
-        change: "increased",
-        changeAmount: "15 mcg/dL"
-      }
-    ],
-    concerningIndicators: []
-  },
-  4: {
-    lastUpdated: "March 25, 2023",
-    positiveIndicators: [
-      {
-        name: "Vitamin B12",
-        value: "650 pg/mL",
-        referenceRange: "200-900 pg/mL",
-        status: "normal",
-        change: "increased",
-        changeAmount: "120 pg/mL"
-      }
-    ],
-    concerningIndicators: [
-      {
-        name: "Vitamin A",
-        value: "0.25 mg/L",
-        referenceRange: "0.3-0.7 mg/L",
-        status: "low",
-        change: "decreased",
-        changeAmount: "0.05 mg/L"
-      }
-    ]
   }
 };
 
 const HealthReports = () => {
-  const [activeTab, setActiveTab] = useState(familyMembers[0].id.toString());
+  const { familyMembers } = useFamily();
+  const [activeTab, setActiveTab] = useState(familyMembers.length > 0 ? familyMembers[0].id : "");
+
+  // If no family members, show message
+  if (familyMembers.length === 0) {
+    return (
+      <DashboardLayout>
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-2xl font-medium mb-2">Health Reports</h1>
+            <p className="text-muted-foreground">
+              Upload and view health reports for your family members
+            </p>
+          </div>
+          
+          <div className="text-center py-12">
+            <p className="text-muted-foreground mb-4">No family members found</p>
+            <p className="text-sm text-muted-foreground">
+              Add family members in the Family Profile section to upload and analyze health reports
+            </p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
@@ -143,33 +116,42 @@ const HealthReports = () => {
           onValueChange={setActiveTab}
           className="w-full"
         >
-          <TabsList className="grid grid-cols-4 mb-8">
+          <TabsList className="grid" style={{ gridTemplateColumns: `repeat(${familyMembers.length}, 1fr)` }}>
             {familyMembers.map((member) => (
               <TabsTrigger 
                 key={member.id} 
-                value={member.id.toString()}
+                value={member.id}
                 className="text-sm"
               >
-                {member.name}
+                {member.nickname}
               </TabsTrigger>
             ))}
           </TabsList>
           
           {familyMembers.map((member) => (
-            <TabsContent key={member.id} value={member.id.toString()}>
+            <TabsContent key={member.id} value={member.id}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <HealthReportUploader 
-                  familyMemberId={member.id} 
-                  memberName={member.name} 
+                  familyMemberId={parseInt(member.id)} 
+                  memberName={member.nickname} 
                 />
                 
-                <HealthReportSummary 
-                  memberId={member.id}
-                  memberName={member.name}
-                  lastUpdated={healthReports[member.id].lastUpdated}
-                  positiveIndicators={healthReports[member.id].positiveIndicators}
-                  concerningIndicators={healthReports[member.id].concerningIndicators}
-                />
+                {/* For demo purposes, only show historical reports for the first two members */}
+                {(member.id === "1" || member.id === "2") && healthReports[member.id] ? (
+                  <HealthReportSummary 
+                    memberId={parseInt(member.id)}
+                    memberName={member.nickname}
+                    lastUpdated={healthReports[member.id].lastUpdated}
+                    positiveIndicators={healthReports[member.id].positiveIndicators}
+                    concerningIndicators={healthReports[member.id].concerningIndicators}
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-muted-foreground">
+                      No previous health reports found. Upload a report to see analysis.
+                    </p>
+                  </div>
+                )}
               </div>
             </TabsContent>
           ))}

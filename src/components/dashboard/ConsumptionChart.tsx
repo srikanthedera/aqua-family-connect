@@ -11,7 +11,8 @@ const ConsumptionChart = () => {
   const [weeklyData, setWeeklyData] = useState<any[]>([]);
   const [monthlyData, setMonthlyData] = useState<any[]>([]);
 
-  // Generate placeholder data based on actual family members
+  // TODO: This effect should be replaced with real-time data from PCB
+  // The PCB should send consumption data which we can transform to the proper format
   useEffect(() => {
     if (familyMembers.length === 0) return;
 
@@ -90,7 +91,8 @@ const ConsumptionChart = () => {
     return null;
   };
 
-  // Function that will be called by PCB to update consumption data
+  // TODO: This function should be implemented to receive real-time updates from PCB
+  // and update the consumption data in the chart
   const updateConsumptionData = (memberId: string, amount: number) => {
     console.log(`Updating consumption for member ${memberId} with amount ${amount}L`);
     // Logic to update consumption data
