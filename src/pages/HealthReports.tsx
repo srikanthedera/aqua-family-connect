@@ -7,8 +7,9 @@ import HealthReportSummary from "@/components/health/HealthReportSummary";
 import { HealthReportData } from "@/types/health";
 import { useFamily } from "@/contexts/FamilyContext";
 
+// TODO: This sample health report data should be fetched from a backend service
+// TODO: Implement AI analysis to generate health report data from uploaded reports
 // Sample health report data - in a real app, this would come from your backend
-// TODO: This should be replaced with actual health report data from the database
 const healthReports: Record<string, HealthReportData> = {
   "1": {
     lastUpdated: "May 15, 2023",
@@ -78,6 +79,22 @@ const HealthReports = () => {
   const { familyMembers } = useFamily();
   const [activeTab, setActiveTab] = useState(familyMembers.length > 0 ? familyMembers[0].id : "");
 
+  // TODO: Implement AI analysis function to process health report PDFs
+  // TODO: This should connect to an AI service that can extract and analyze health data
+  const analyzeHealthReport = (pdfFile: File, memberId: string) => {
+    console.log(`Analyzing health report for member ${memberId}`, pdfFile);
+    // In a real implementation, this would send the PDF to an AI service
+    // and return structured data about the health indicators
+  };
+
+  // TODO: Implement function to compare two health reports
+  // TODO: This should connect to an AI service that can compare reports and highlight changes
+  const compareHealthReports = (oldReportId: string, newReportId: string, memberId: string) => {
+    console.log(`Comparing reports ${oldReportId} and ${newReportId} for member ${memberId}`);
+    // In a real implementation, this would retrieve both reports and use AI
+    // to generate a comparison highlighting improvements and concerns
+  };
+
   // If no family members, show message
   if (familyMembers.length === 0) {
     return (
@@ -136,7 +153,7 @@ const HealthReports = () => {
                   memberName={member.nickname} 
                 />
                 
-                {/* For demo purposes, only show historical reports for the first two members */}
+                {/* For demo purposes, only show historical reports for members with IDs 1 or 2 */}
                 {(member.id === "1" || member.id === "2") && healthReports[member.id] ? (
                   <HealthReportSummary 
                     memberId={parseInt(member.id)}

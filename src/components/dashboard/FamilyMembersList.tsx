@@ -22,6 +22,7 @@ const FamilyMembersList: React.FC<FamilyMembersListProps> = ({
   const navigate = useNavigate();
 
   // TODO: This function needs to be updated to send data to the PCB when a family member's water is dispensed
+  // TODO: Implement realtime update when water is dispensed by connecting to PCBService
   const handleTap = (member: FamilyMember) => {
     if (onSelectMember) {
       onSelectMember(member);
@@ -30,6 +31,9 @@ const FamilyMembersList: React.FC<FamilyMembersListProps> = ({
       toast.success(`Recording water dispensed for ${member.nickname}`, {
         description: `pH level: ${member.phValue}`
       });
+      
+      // TODO: Send this data to the PCB through PCBService
+      console.log(`Water dispensed for ${member.nickname} with pH ${member.phValue}`);
     }
   };
 
