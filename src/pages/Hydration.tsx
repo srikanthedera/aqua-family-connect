@@ -74,7 +74,12 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 const Hydration = () => {
   const [timeRange, setTimeRange] = useState("3months");
   const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
-  const { familyMembers } = useFamily();
+  const { familyMembers, syncFamilyProfileData } = useFamily();
+
+  // Force sync with familyProfile storage on component mount
+  useEffect(() => {
+    syncFamilyProfileData();
+  }, [syncFamilyProfileData]);
 
   // TODO: This function will be called when PCB sends data
   // It should update the state with the new consumption data

@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import ConsumptionChart from "@/components/dashboard/ConsumptionChart";
 import FamilyMembersList from "@/components/dashboard/FamilyMembersList";
@@ -8,9 +8,16 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Droplets, Users, FileText, Smartphone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useFamily } from "@/contexts/FamilyContext";
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { syncFamilyProfileData } = useFamily();
+  
+  // Force sync with familyProfile storage on component mount
+  useEffect(() => {
+    syncFamilyProfileData();
+  }, [syncFamilyProfileData]);
 
   return (
     <DashboardLayout>

@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import HealthReportUploader from "@/components/health/HealthReportUploader";
@@ -76,8 +76,18 @@ const healthReports: Record<string, HealthReportData> = {
 };
 
 const HealthReports = () => {
-  const { familyMembers } = useFamily();
+  const { familyMembers, syncFamilyProfileData } = useFamily();
   const [activeTab, setActiveTab] = useState(familyMembers.length > 0 ? familyMembers[0].id : "");
+
+  // Force sync with familyProfile storage on component mount
+  useEffect(() => {
+    syncFamilyProfileData();
+    
+    // Set the active tab to the first family member if available
+    if (familyMembers.length > 0 && !activeTab) {
+      setActiveTab(familyMembers[0].id);
+    }
+  }, [syncFamilyProfileData, familyMembers, activeTab]);
 
   // TODO: Implement AI analysis function to process health report PDFs
   // TODO: This should connect to an AI service that can extract and analyze health data

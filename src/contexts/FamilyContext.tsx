@@ -6,7 +6,7 @@ export interface FamilyMember {
   nickname: string;
   age: number;
   phValue: number;
-  avatar?: string; // Added avatar property as optional
+  avatar?: string;
   consumption?: {
     today: number;
     week: number;
@@ -21,6 +21,7 @@ interface FamilyContextType {
   addFamilyMember: (member: Omit<FamilyMember, "id">) => void;
   updateFamilyMember: (id: string, data: Partial<FamilyMember>) => void;
   deleteFamilyMember: (id: string) => void;
+  syncFamilyProfileData: () => void; // New function to force sync between storages
 }
 
 const FamilyContext = createContext<FamilyContextType | undefined>(undefined);
@@ -28,16 +29,14 @@ const FamilyContext = createContext<FamilyContextType | undefined>(undefined);
 export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
 
-  // Load family members from local storage on initial render
-  useEffect(() => {
+  // Function to synchronize data between familyProfile and familyMembers storages
+  const syncFamilyProfileData = () => {
+    console.log("Syncing family profile data...");
+    
     const storedMembers = localStorage.getItem("familyMembers");
     const storedFamilyProfile = localStorage.getItem("familyProfile");
     
-    if (storedMembers) {
-      console.log("Loading family members from localStorage (familyMembers)");
-      setFamilyMembers(JSON.parse(storedMembers));
-    } else if (storedFamilyProfile) {
-      // If no familyMembers in localStorage but we have a familyProfile, use that
+    if (storedFamilyProfile) {
       try {
         console.log("Loading family members from localStorage (familyProfile)");
         const familyProfile = JSON.parse(storedFamilyProfile);
@@ -60,17 +59,40 @@ export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           setFamilyMembers(formattedMembers);
           // Also save to familyMembers in localStorage for future consistency
           localStorage.setItem("familyMembers", JSON.stringify(formattedMembers));
+          console.log("Family members synced from familyProfile:", formattedMembers);
         }
       } catch (error) {
         console.error("Error parsing family profile:", error);
       }
+    } else if (storedMembers) {
+      console.log("Loading family members from localStorage (familyMembers)");
+      setFamilyMembers(JSON.parse(storedMembers));
     }
+  };
+
+  // Load family members from local storage on initial render
+  useEffect(() => {
+    syncFamilyProfileData();
   }, []);
 
   // Save to local storage whenever familyMembers changes
   useEffect(() => {
     if (familyMembers.length > 0) {
       localStorage.setItem("familyMembers", JSON.stringify(familyMembers));
+      console.log("Family members saved to localStorage:", familyMembers);
+      
+      // Check if familyProfile exists, if so update its members too
+      const storedFamilyProfile = localStorage.getItem("familyProfile");
+      if (storedFamilyProfile) {
+        try {
+          const familyProfile = JSON.parse(storedFamilyProfile);
+          familyProfile.members = familyMembers;
+          localStorage.setItem("familyProfile", JSON.stringify(familyProfile));
+          console.log("Family profile members updated");
+        } catch (error) {
+          console.error("Error updating family profile members:", error);
+        }
+      }
     }
   }, [familyMembers]);
 
@@ -117,7 +139,8 @@ export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setFamilyMembers, 
         addFamilyMember, 
         updateFamilyMember, 
-        deleteFamilyMember 
+        deleteFamilyMember,
+        syncFamilyProfileData 
       }}
     >
       {children}

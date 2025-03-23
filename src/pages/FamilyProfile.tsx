@@ -23,76 +23,37 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import EditMemberDialog from "@/components/profile/EditMemberDialog";
-
-interface FamilyMember {
-  id: string;
-  nickname: string;
-  age: number;
-  phValue: number;
-  dateAdded: string;
-}
-
-interface FamilyProfile {
-  familyName: string;
-  members: FamilyMember[];
-}
+import { useFamily, FamilyMember } from "@/contexts/FamilyContext";
 
 const FamilyProfile = () => {
   const navigate = useNavigate();
-  const [familyProfile, setFamilyProfile] = useState<FamilyProfile | null>(null);
+  const { familyMembers, updateFamilyMember, deleteFamilyMember, syncFamilyProfileData } = useFamily();
+  const [familyName, setFamilyName] = useState<string>("My");
   const [memberToDelete, setMemberToDelete] = useState<string | null>(null);
   const [memberToEdit, setMemberToEdit] = useState<FamilyMember | null>(null);
   
   useEffect(() => {
-    // Load family profile from localStorage
-    const savedProfile = localStorage.getItem('familyProfile');
+    // Force sync with familyProfile storage on component mount
+    syncFamilyProfileData();
     
-    if (savedProfile) {
+    // Load family name from localStorage
+    const storedFamilyProfile = localStorage.getItem('familyProfile');
+    if (storedFamilyProfile) {
       try {
-        const parsedProfile = JSON.parse(savedProfile);
-        
-        // Transform members to add IDs and dates if they don't exist
-        const formattedMembers = parsedProfile.members.map((member: any) => ({
-          id: member.id || crypto.randomUUID(),
-          nickname: member.nickname,
-          age: member.age,
-          phValue: member.phValue,
-          dateAdded: member.dateAdded || new Date().toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-          })
-        }));
-        
-        setFamilyProfile({
-          familyName: parsedProfile.familyName,
-          members: formattedMembers
-        });
+        const parsedProfile = JSON.parse(storedFamilyProfile);
+        setFamilyName(parsedProfile.familyName || "My");
       } catch (error) {
         console.error("Error parsing family profile:", error);
-        toast.error("Could not load family profile data");
       }
     }
-  }, []);
+  }, [syncFamilyProfileData]);
 
   const handleEditMember = (member: FamilyMember) => {
     setMemberToEdit(member);
   };
 
   const handleSaveMember = (updatedMember: FamilyMember) => {
-    if (!familyProfile) return;
-    
-    const updatedMembers = familyProfile.members.map(member => 
-      member.id === updatedMember.id ? updatedMember : member
-    );
-    
-    const updatedProfile = {
-      ...familyProfile,
-      members: updatedMembers
-    };
-    
-    setFamilyProfile(updatedProfile);
-    localStorage.setItem('familyProfile', JSON.stringify(updatedProfile));
+    updateFamilyMember(updatedMember.id, updatedMember);
     setMemberToEdit(null);
     toast.success(`${updatedMember.nickname}'s profile updated`);
   };
@@ -102,33 +63,24 @@ const FamilyProfile = () => {
   };
 
   const confirmDeleteMember = () => {
-    if (!familyProfile || !memberToDelete) return;
+    if (!memberToDelete) return;
     
-    const memberToRemove = familyProfile.members.find(m => m.id === memberToDelete);
-    const updatedMembers = familyProfile.members.filter(member => member.id !== memberToDelete);
+    const memberToRemove = familyMembers.find(m => m.id === memberToDelete);
     
-    if (updatedMembers.length === 0) {
+    if (familyMembers.length <= 1) {
       toast.error("Cannot delete the last family member");
       setMemberToDelete(null);
       return;
     }
     
-    const updatedProfile = {
-      ...familyProfile,
-      members: updatedMembers
-    };
-    
-    setFamilyProfile(updatedProfile);
-    localStorage.setItem('familyProfile', JSON.stringify(updatedProfile));
+    deleteFamilyMember(memberToDelete);
     setMemberToDelete(null);
     
     toast.success(`${memberToRemove?.nickname || 'Member'} removed from family profile`);
   };
 
   const handleAddMember = () => {
-    if (!familyProfile) return;
-    
-    if (familyProfile.members.length >= 6) {
+    if (familyMembers.length >= 6) {
       toast.error("Maximum 6 family members allowed");
       return;
     }
@@ -143,7 +95,7 @@ const FamilyProfile = () => {
     return "text-teal-500";
   };
 
-  if (!familyProfile) {
+  if (familyMembers.length === 0) {
     return (
       <DashboardLayout>
         <div className="flex flex-col items-center justify-center h-[50vh]">
@@ -161,7 +113,7 @@ const FamilyProfile = () => {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-medium mb-2">{familyProfile.familyName} Family Profile</h1>
+            <h1 className="text-2xl font-medium mb-2">{familyName} Family Profile</h1>
             <p className="text-muted-foreground">
               Manage your family members and their water preferences
             </p>
@@ -169,7 +121,7 @@ const FamilyProfile = () => {
           <Button 
             onClick={handleAddMember}
             className="rounded-xl"
-            disabled={familyProfile.members.length >= 6}
+            disabled={familyMembers.length >= 6}
           >
             <PlusIcon className="h-4 w-4 mr-2" />
             Add Member
@@ -177,7 +129,7 @@ const FamilyProfile = () => {
         </div>
         
         <div className="grid grid-cols-1 gap-4">
-          {familyProfile.members.map((member) => (
+          {familyMembers.map((member) => (
             <Card 
               key={member.id} 
               className="shadow-md border-none overflow-hidden animate-slide-up"
@@ -192,7 +144,7 @@ const FamilyProfile = () => {
                     <div>
                       <h3 className="text-lg font-medium">{member.nickname}</h3>
                       <p className="text-sm text-muted-foreground">
-                        Added on {member.dateAdded}
+                        Added on {new Date(member.dateAdded || "").toLocaleDateString()}
                       </p>
                     </div>
                   </div>
@@ -241,7 +193,7 @@ const FamilyProfile = () => {
             className="rounded-xl"
             onClick={() => {
               toast.info("Syncing data with PCB board");
-              // Here you would implement the sync with water filter logic
+              // TODO: Implement sync with PCB board through PCBService.syncFamilyMembers()
             }}
           >
             Sync with Water Filter
