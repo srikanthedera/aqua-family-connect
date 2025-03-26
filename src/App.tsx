@@ -35,13 +35,13 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/verify-email" element={<VerifyEmailPage />} />
+            <Route path="/device-setup" element={<DeviceSetup />} />
             <Route path="/create-family-profile" element={<CreateFamilyProfilePage />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/hydration" element={<Hydration />} />
             <Route path="/health-reports" element={<HealthReports />} />
             <Route path="/family-profile" element={<FamilyProfile />} />
             <Route path="/connect-device" element={<ConnectDevice />} />
-            <Route path="/device-setup" element={<DeviceSetup />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -28,7 +28,7 @@ const SetupComplete: React.FC<SetupCompleteProps> = ({ onFinish }) => {
             <ul className="space-y-3 list-disc list-inside text-muted-foreground">
               <li>Your Ionphor device will restart and connect to your home WiFi</li>
               <li>The LED will turn solid blue when the connection is successful</li>
-              <li>You'll be able to monitor and control your device from the app</li>
+              <li>Now you'll create your family profile to personalize your experience</li>
               <li>System updates will be automatically downloaded and installed</li>
             </ul>
           </div>
@@ -39,7 +39,7 @@ const SetupComplete: React.FC<SetupCompleteProps> = ({ onFinish }) => {
               <li>Place your Ionphor device in an open area for better connectivity</li>
               <li>Keep the device away from large metal objects and appliances</li>
               <li>Ensure your WiFi router is working properly for continuous connectivity</li>
-              <li>Check for firmware updates regularly in the Connect Device section</li>
+              <li>Check for firmware updates regularly in the Device section</li>
             </ul>
           </div>
         </div>
@@ -49,7 +49,7 @@ const SetupComplete: React.FC<SetupCompleteProps> = ({ onFinish }) => {
             onClick={onFinish} 
             className="space-x-2"
           >
-            <span>Continue to Device Dashboard</span>
+            <span>Continue to Family Profile Creation</span>
             <ArrowRight className="h-4 w-4" />
           </Button>
         </div>

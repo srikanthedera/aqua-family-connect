@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
@@ -34,7 +33,7 @@ const DeviceSetup = () => {
   };
   
   const handleComplete = () => {
-    navigate("/connect-device");
+    navigate("/create-family-profile");
   };
   
   const renderCurrentStep = () => {
@@ -81,8 +80,8 @@ const DeviceSetup = () => {
   };
   
   return (
-    <DashboardLayout>
-      <div className="max-w-3xl mx-auto">
+    <div className="min-h-screen bg-background">
+      <div className="max-w-3xl mx-auto pt-8 pb-16 px-4">
         <div className="space-y-8">
           <div>
             <h1 className="text-2xl font-medium mb-2">Ionphor Device Setup</h1>
@@ -98,7 +97,7 @@ const DeviceSetup = () => {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </div>
   );
 };
 

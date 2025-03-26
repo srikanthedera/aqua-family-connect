@@ -38,14 +38,8 @@ const LoginForm = () => {
       console.log("Login data:", values);
       toast.success("Successfully logged in!");
       
-      // Check if user has a family profile
-      const hasFamilyProfile = false; // This would be determined by your backend
-      
-      if (hasFamilyProfile) {
-        navigate("/dashboard");
-      } else {
-        navigate("/create-family-profile");
-      }
+      // Redirect to device setup instead of family profile
+      navigate("/device-setup");
     } catch (error) {
       console.error("Login error:", error);
       toast.error("Invalid email or password. Please try again.");

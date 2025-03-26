@@ -78,7 +78,7 @@ const Dashboard = () => {
                 <Smartphone className="h-6 w-6 text-purple-500" />
               </div>
               <h3 className="font-medium text-lg text-center mb-1">Device</h3>
-              <p className="text-sm text-center text-muted-foreground">Manage your filter</p>
+              <p className="text-sm text-center text-muted-foreground">Connect to Ionphor device</p>
             </CardContent>
           </Card>
         </div>
