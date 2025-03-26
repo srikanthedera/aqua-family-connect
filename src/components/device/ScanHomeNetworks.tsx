@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
   Wifi, RefreshCw, AlertCircle, ShieldCheck, Shield, 
-  Lock, Eye, EyeOff, ArrowRight, Home 
+  Lock, Eye, EyeOff, ArrowRight, Home, Check
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { WiFiNetwork } from "@/pages/DeviceSetup";
