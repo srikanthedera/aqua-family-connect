@@ -1,5 +1,5 @@
 
-import { Platform } from '@capacitor/core';
+import { Capacitor } from '@capacitor/core';
 
 export interface WiFiNetwork {
   ssid: string;
@@ -10,7 +10,7 @@ export interface WiFiNetwork {
 class WifiService {
   // Check if we're running on a native platform
   private isNative(): boolean {
-    return Platform.isNative;
+    return Capacitor.isNativePlatform();
   }
 
   // Scan for available WiFi networks
