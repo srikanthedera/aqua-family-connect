@@ -1,13 +1,15 @@
-
 /**
  * PCBService - Handles communication with the water filter PCB board
  * 
- * This service provides methods to:
- * - Connect to the PCB
- * - Listen for water consumption data
- * - Listen for water quality data
- * - Send family profiles to the PCB
- * - Trigger water dispensing
+ * In a real implementation, this service would use platform-specific APIs to:
+ * - Connect to the PCB via WiFi, Bluetooth or other protocols
+ * - Send and receive data from the physical device
+ * - Handle device events and status updates
+ * 
+ * For a web app, this would typically require a native wrapper like:
+ * - Capacitor or Cordova for mobile apps
+ * - Electron for desktop apps
+ * - Or communication through a local backend service
  */
 
 import { FamilyMember } from "@/contexts/FamilyContext";
@@ -42,6 +44,7 @@ class PCBService {
 
   private constructor() {
     // Private constructor to force singleton usage
+    console.log("PCB Service initialized");
   }
 
   public static getInstance(): PCBService {
@@ -52,12 +55,20 @@ class PCBService {
   }
 
   /**
-   * TODO: Implement real PCB connection logic
-   * In a real app, this would use WebSockets, Bluetooth, or another 
-   * communication protocol to connect to the physical device
+   * In a real app, this would connect to the physical device
+   * For example, using Web Bluetooth, WebUSB, or a native bridge like Capacitor
+   * 
+   * Example with Capacitor:
+   * ```
+   * import { Plugins } from '@capacitor/core';
+   * const { BluetoothLE } = Plugins;
+   * await BluetoothLE.connect({ deviceId: 'device_id_here' });
+   * ```
    */
   public connect(): Promise<boolean> {
     return new Promise((resolve) => {
+      console.log("Attempting to connect to Ionphor device...");
+      
       // Simulate connection process
       setTimeout(() => {
         this.connected = true;
@@ -73,7 +84,7 @@ class PCBService {
   }
 
   /**
-   * TODO: Implement real PCB disconnection logic
+   * In a real app, this would disconnect from the physical device
    */
   public disconnect(): Promise<boolean> {
     return new Promise((resolve) => {
@@ -95,8 +106,11 @@ class PCBService {
   }
 
   /**
-   * TODO: Replace this with actual data from PCB
-   * This is just for demo purposes
+   * THIS IS ONLY FOR DEMO PURPOSES
+   * 
+   * In a real implementation, data would come from the actual device
+   * through platform-specific APIs like Bluetooth LE characteristics
+   * or WebSocket messages from a local server
    */
   private startDataSimulation() {
     // Clear any existing interval
@@ -133,8 +147,8 @@ class PCBService {
   }
 
   /**
-   * TODO: Implement real family profile synchronization with PCB
-   * Send family profiles to the PCB for user identification
+   * In a real app, this would send family profile data to the device
+   * using platform APIs or a local server
    */
   public syncFamilyProfiles(members: FamilyMember[]): Promise<boolean> {
     return new Promise((resolve) => {
@@ -154,8 +168,8 @@ class PCBService {
   }
 
   /**
-   * TODO: Implement real water dispensing command to PCB
-   * Trigger water dispensing for a specific family member
+   * In a real app, this would send commands to the physical device
+   * to dispense water with specific parameters
    */
   public dispenseWater(memberId: string, amount: number, ph: number): Promise<boolean> {
     return new Promise((resolve) => {

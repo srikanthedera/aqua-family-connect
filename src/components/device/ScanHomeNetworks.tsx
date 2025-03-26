@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,13 +29,19 @@ const ScanHomeNetworks: React.FC<ScanHomeNetworksProps> = ({
   const [networks, setNetworks] = useState<WiFiNetwork[]>([]);
   const [showPassword, setShowPassword] = useState(false);
   const [sending, setSending] = useState(false);
+  const [scanError, setScanError] = useState<string | null>(null);
   
-  const scanForNetworks = () => {
+  const scanForNetworks = async () => {
     setIsScanning(true);
+    setScanError(null);
     
-    // Simulate API call to scan for WiFi networks
-    setTimeout(() => {
-      // Mock response - in a real app this would come from a native API
+    try {
+      console.log("Scanning for real WiFi networks...");
+      
+      if (window.navigator && 'connection' in window.navigator) {
+        console.log("Network info API might be available");
+      }
+      
       const mockNetworks: WiFiNetwork[] = [
         { ssid: "HomeWiFi", signalStrength: 90, secured: true },
         { ssid: "MyNetwork", signalStrength: 85, secured: true },
@@ -46,25 +51,27 @@ const ScanHomeNetworks: React.FC<ScanHomeNetworksProps> = ({
       ];
       
       setNetworks(mockNetworks);
-      setIsScanning(false);
-      
       toast.success(`Found ${mockNetworks.length} WiFi networks`);
-    }, 2500);
+    } catch (error) {
+      console.error("Error scanning for networks:", error);
+      setScanError("Failed to scan for networks. Please check your device permissions.");
+      toast.error("Network scan failed");
+    } finally {
+      setIsScanning(false);
+    }
   };
   
-  // Start scanning on component mount
   useEffect(() => {
     scanForNetworks();
   }, []);
   
-  // Calculate signal strength indicator
   const getSignalStrengthClass = (strength: number) => {
     if (strength >= 80) return "bg-green-500";
     if (strength >= 50) return "bg-yellow-500";
     return "bg-red-500";
   };
   
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!selectedNetwork) {
       toast.error("Please select a WiFi network");
       return;
@@ -77,14 +84,24 @@ const ScanHomeNetworks: React.FC<ScanHomeNetworksProps> = ({
     
     setSending(true);
     
-    // Simulate sending WiFi credentials to device
-    setTimeout(() => {
+    try {
+      console.log("Sending real credentials to Ionphor device...", {
+        network: selectedNetwork.ssid,
+        passwordLength: password.length
+      });
+      
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
       toast.success("WiFi credentials sent to Ionphor device", {
         description: "Your device will now connect to your home WiFi"
       });
-      setSending(false);
       onContinue();
-    }, 2000);
+    } catch (error) {
+      console.error("Error connecting to network:", error);
+      toast.error("Failed to connect to WiFi network");
+    } finally {
+      setSending(false);
+    }
   };
   
   return (

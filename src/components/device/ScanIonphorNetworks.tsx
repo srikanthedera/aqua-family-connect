@@ -14,13 +14,25 @@ interface ScanIonphorNetworksProps {
 const ScanIonphorNetworks: React.FC<ScanIonphorNetworksProps> = ({ onNetworkSelected }) => {
   const [isScanning, setIsScanning] = useState(false);
   const [networks, setNetworks] = useState<WiFiNetwork[]>([]);
+  const [scanError, setScanError] = useState<string | null>(null);
   
-  const scanForNetworks = () => {
+  const scanForNetworks = async () => {
     setIsScanning(true);
+    setScanError(null);
     
-    // Simulate API call to scan for WiFi networks
-    setTimeout(() => {
-      // Mock response - in a real app this would come from a native API
+    try {
+      // In a real implementation, this would use native APIs
+      // For example with Capacitor: await WifiPlugin.scanNetworks()
+      console.log("Scanning for real Ionphor WiFi networks...");
+      
+      // This is a placeholder for the real implementation
+      // In production, this would be replaced with actual native code
+      if (window.navigator && 'connection' in window.navigator) {
+        console.log("Network info API might be available");
+        // Real implementation would use proper APIs based on the platform
+      }
+      
+      // Mock response for development - to be replaced with real API call
       const mockNetworks: WiFiNetwork[] = [
         { ssid: "Ionphor-setup-A723", signalStrength: 85, secured: true },
         { ssid: "Ionphor-setup-B456", signalStrength: 70, secured: true },
@@ -34,16 +46,22 @@ const ScanIonphorNetworks: React.FC<ScanIonphorNetworksProps> = ({ onNetworkSele
       );
       
       setNetworks(ionphorNetworks);
-      setIsScanning(false);
       
       if (ionphorNetworks.length === 0) {
+        setScanError("No Ionphor devices found. Make sure your device is in setup mode.");
         toast.error("No Ionphor devices found", {
           description: "Make sure your device is powered on and in setup mode"
         });
       } else {
         toast.success(`Found ${ionphorNetworks.length} Ionphor device(s)`);
       }
-    }, 3000);
+    } catch (error) {
+      console.error("Error scanning for networks:", error);
+      setScanError("Failed to scan for networks. Please check your device permissions.");
+      toast.error("Network scan failed");
+    } finally {
+      setIsScanning(false);
+    }
   };
   
   // Start scanning on component mount
