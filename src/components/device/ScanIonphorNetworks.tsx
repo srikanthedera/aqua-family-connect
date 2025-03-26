@@ -1,11 +1,11 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Wifi, RefreshCw, AlertCircle, ShieldCheck, Shield } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { WiFiNetwork } from "@/pages/DeviceSetup";
+import { WiFiNetwork } from "@/services/WifiService";
 import { toast } from "sonner";
+import { wifiService } from "@/services/WifiService";
 
 interface ScanIonphorNetworksProps {
   onNetworkSelected: (network: WiFiNetwork) => void;
@@ -21,29 +21,10 @@ const ScanIonphorNetworks: React.FC<ScanIonphorNetworksProps> = ({ onNetworkSele
     setScanError(null);
     
     try {
-      // In a real implementation, this would use native APIs
-      // For example with Capacitor: await WifiPlugin.scanNetworks()
-      console.log("Scanning for real Ionphor WiFi networks...");
+      console.log("Scanning for Ionphor WiFi networks...");
       
-      // This is a placeholder for the real implementation
-      // In production, this would be replaced with actual native code
-      if (window.navigator && 'connection' in window.navigator) {
-        console.log("Network info API might be available");
-        // Real implementation would use proper APIs based on the platform
-      }
-      
-      // Mock response for development - to be replaced with real API call
-      const mockNetworks: WiFiNetwork[] = [
-        { ssid: "Ionphor-setup-A723", signalStrength: 85, secured: true },
-        { ssid: "Ionphor-setup-B456", signalStrength: 70, secured: true },
-        { ssid: "HomeWiFi", signalStrength: 90, secured: true },
-        { ssid: "NeighborWiFi", signalStrength: 60, secured: true },
-      ];
-      
-      // Filter to only show Ionphor setup networks
-      const ionphorNetworks = mockNetworks.filter(n => 
-        n.ssid.startsWith("Ionphor-setup-")
-      );
+      // Use our WifiService to scan for Ionphor devices
+      const ionphorNetworks = await wifiService.scanForIonphorDevices();
       
       setNetworks(ionphorNetworks);
       
