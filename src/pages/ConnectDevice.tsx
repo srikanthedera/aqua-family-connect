@@ -1,14 +1,16 @@
 
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { WifiIcon, SmartphoneIcon, CheckIcon, XIcon, RefreshCwIcon, SendIcon, TrendingUpIcon } from "lucide-react";
+import { WifiIcon, SmartphoneIcon, CheckIcon, XIcon, RefreshCwIcon, SendIcon, TrendingUpIcon, ArrowRightIcon } from "lucide-react";
 import PCBService from "@/services/PCBService";
 import { useFamily } from "@/contexts/FamilyContext";
 
 const ConnectDevice = () => {
+  const navigate = useNavigate();
   const [isConnecting, setIsConnecting] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
@@ -65,6 +67,10 @@ const ConnectDevice = () => {
     } finally {
       setIsSyncing(false);
     }
+  };
+
+  const handleStartSetup = () => {
+    navigate("/device-setup");
   };
 
   // TODO: In a real app, this information would come from the PCB device
@@ -262,6 +268,22 @@ const ConnectDevice = () => {
                   <li>Make sure you're within 30 feet of the device</li>
                   <li>Check if firmware updates are available</li>
                 </ul>
+              </div>
+              
+              <div className="rounded-lg bg-primary/5 p-4 border border-primary/20">
+                <h3 className="text-sm font-medium mb-2">First Time Setup</h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  If this is your first time setting up the device, you'll need to configure WiFi settings
+                  using our step-by-step setup wizard.
+                </p>
+                <Button
+                  onClick={handleStartSetup}
+                  variant="default"
+                  className="w-full space-x-2"
+                >
+                  <span>Start WiFi Setup</span>
+                  <ArrowRightIcon className="h-4 w-4" />
+                </Button>
               </div>
             </CardContent>
             {isConnected && (

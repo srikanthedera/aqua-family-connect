@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -17,6 +18,7 @@ import HealthReports from "./pages/HealthReports";
 import FamilyProfile from "./pages/FamilyProfile";
 import Settings from "./pages/Settings";
 import ConnectDevice from "./pages/ConnectDevice";
+import DeviceSetup from "./pages/DeviceSetup";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,6 +41,7 @@ const App = () => (
             <Route path="/health-reports" element={<HealthReports />} />
             <Route path="/family-profile" element={<FamilyProfile />} />
             <Route path="/connect-device" element={<ConnectDevice />} />
+            <Route path="/device-setup" element={<DeviceSetup />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
