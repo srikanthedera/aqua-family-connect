@@ -8,7 +8,8 @@ import {
   FileTextIcon, 
   SettingsIcon, 
   UserIcon,
-  MenuIcon
+  MenuIcon,
+  XIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -49,11 +50,18 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       </SheetTrigger>
       <SheetContent side="left" className="p-0 w-64 border-r border-border/50">
         <div className="flex flex-col h-full">
-          <div className="p-6 border-b border-border/50">
+          <div className="p-6 border-b border-border/50 flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <DropletIcon className="h-6 w-6 text-primary" />
               <span className="font-semibold text-lg">Water Wellness</span>
             </div>
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={() => setSidebarOpen(false)}
+            >
+              <XIcon className="h-4 w-4" />
+            </Button>
           </div>
           
           <nav className="flex-1 p-4">

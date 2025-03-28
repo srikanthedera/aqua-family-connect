@@ -1,6 +1,7 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import DeviceSetupStepper from "@/components/device/DeviceSetupStepper";
 import PowerOnDevice from "@/components/device/PowerOnDevice";
 import ScanIonphorNetworks from "@/components/device/ScanIonphorNetworks";
@@ -81,8 +82,8 @@ const DeviceSetup = () => {
   
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-3xl mx-auto pt-6 pb-16 px-4 md:px-6">
-        <div className="space-y-6 md:space-y-8">
+      <div className="max-w-3xl mx-auto pt-8 pb-16 px-4">
+        <div className="space-y-8">
           <div>
             <h1 className="text-2xl font-medium mb-2 mt-2 md:mt-0">Ionphor Device Setup</h1>
             <p className="text-muted-foreground">
@@ -90,11 +91,9 @@ const DeviceSetup = () => {
             </p>
           </div>
           
-          <div className="py-4 overflow-hidden">
-            <DeviceSetupStepper currentStep={currentStep} />
-          </div>
+          <DeviceSetupStepper currentStep={currentStep} />
           
-          <div className="mt-4 md:mt-8">
+          <div className="mt-8">
             {renderCurrentStep()}
           </div>
         </div>
