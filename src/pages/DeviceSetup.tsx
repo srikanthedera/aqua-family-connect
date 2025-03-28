@@ -1,7 +1,6 @@
 
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import DeviceSetupStepper from "@/components/device/DeviceSetupStepper";
 import PowerOnDevice from "@/components/device/PowerOnDevice";
 import ScanIonphorNetworks from "@/components/device/ScanIonphorNetworks";
@@ -91,9 +90,11 @@ const DeviceSetup = () => {
             </p>
           </div>
           
-          <DeviceSetupStepper currentStep={currentStep} />
+          <div className="py-4">
+            <DeviceSetupStepper currentStep={currentStep} />
+          </div>
           
-          <div className="mt-8">
+          <div className="mt-4 md:mt-8">
             {renderCurrentStep()}
           </div>
         </div>
