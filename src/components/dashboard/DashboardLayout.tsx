@@ -43,7 +43,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         <Button 
           variant="ghost" 
           size="icon" 
-          className="absolute top-4 left-4 md:hidden z-50"
+          className="fixed top-4 left-4 z-50 bg-background/80 backdrop-blur-sm"
         >
           <MenuIcon className="h-6 w-6" />
         </Button>
@@ -159,6 +159,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         isMobile ? "w-full" : "md:pl-64"
       )}>
         <div className="min-h-screen p-4 md:p-8">
+          {/* Add additional padding to create space for the mobile menu button */}
+          {isMobile && <div className="h-14" />}
           {children}
         </div>
       </main>

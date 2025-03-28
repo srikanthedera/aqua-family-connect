@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
@@ -84,7 +85,7 @@ const DeviceSetup = () => {
       <div className="max-w-3xl mx-auto pt-8 pb-16 px-4">
         <div className="space-y-8">
           <div>
-            <h1 className="text-2xl font-medium mb-2">Ionphor Device Setup</h1>
+            <h1 className="text-2xl font-medium mb-2 mt-2 md:mt-0">Ionphor Device Setup</h1>
             <p className="text-muted-foreground">
               Connect your Ionphor device to your home WiFi network
             </p>

@@ -36,8 +36,8 @@ const DeviceSetupStepper = ({ currentStep }: { currentStep: DeviceSetupStep }) =
   const currentIndex = steps.findIndex(([step]) => step === currentStep);
   
   return (
-    <div className="w-full">
-      <div className="flex items-center justify-between">
+    <div className="w-full overflow-x-auto">
+      <div className="flex items-start justify-between min-w-[500px] md:min-w-0">
         {steps.map(([step, info], index) => {
           const isActive = step === currentStep;
           const isCompleted = index < currentIndex;
@@ -45,7 +45,7 @@ const DeviceSetupStepper = ({ currentStep }: { currentStep: DeviceSetupStep }) =
           return (
             <React.Fragment key={step}>
               {/* Step */}
-              <div className="flex flex-col items-center">
+              <div className="flex flex-col items-center space-y-2">
                 <div 
                   className={`
                     w-10 h-10 rounded-full flex items-center justify-center
@@ -59,7 +59,7 @@ const DeviceSetupStepper = ({ currentStep }: { currentStep: DeviceSetupStep }) =
                     <info.icon className="h-5 w-5" />
                   )}
                 </div>
-                <span className={`text-xs mt-2 ${isActive ? 'font-medium' : 'text-muted-foreground'}`}>
+                <span className={`text-xs whitespace-nowrap ${isActive ? 'font-medium' : 'text-muted-foreground'}`}>
                   {info.label}
                 </span>
               </div>
@@ -68,7 +68,7 @@ const DeviceSetupStepper = ({ currentStep }: { currentStep: DeviceSetupStep }) =
               {index < steps.length - 1 && (
                 <div 
                   className={`
-                    flex-1 h-[2px] mx-2
+                    flex-1 h-[2px] mt-5 mx-2
                     ${index < currentIndex ? 'bg-primary' : 'bg-muted'}
                   `}
                 />
