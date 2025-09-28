@@ -1,8 +1,8 @@
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { DeviceSetupStep } from "@/pages/DeviceSetup";
 import { Check, Wifi, SmartphoneIcon, Home, CheckCircle, Power } from "lucide-react";
-import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
+import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/components/ui/carousel";
 
 type StepInfo = {
   label: string;
@@ -35,18 +35,18 @@ const STEPS: Record<DeviceSetupStep, StepInfo> = {
 const DeviceSetupStepper = ({ currentStep }: { currentStep: DeviceSetupStep }) => {
   const steps = Object.entries(STEPS) as [DeviceSetupStep, StepInfo][];
   const currentIndex = steps.findIndex(([step]) => step === currentStep);
-  const carouselRef = useRef<any>(null);
+  const [api, setApi] = useState<CarouselApi>();
   
   useEffect(() => {
-    if (carouselRef.current) {
-      carouselRef.current.scrollToSlide(currentIndex);
+    if (api) {
+      api.scrollTo(currentIndex);
     }
-  }, [currentIndex]);
+  }, [api, currentIndex]);
   
   return (
     <div className="w-full">
       <Carousel 
-        ref={carouselRef}
+        setApi={setApi}
         className="w-full max-w-4xl mx-auto"
         opts={{
           align: "center",
